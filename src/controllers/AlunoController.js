@@ -266,4 +266,4 @@ function listAlunoById(req, res) {
 
 
 
-module.exports = { createAluno, deleteAluno, updateAluno, updateAlunoByAttribute, listAlunos, listAlunoById, getAlunoBySimpleQuery, getAlunoByComplexQuery};
+module.exports = { createAluno, deleteAluno, updateAluno, updateAlunoByAttribute, listAlunos, listAlunoById};
