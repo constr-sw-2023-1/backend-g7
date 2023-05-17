@@ -2,8 +2,9 @@ const request = require('request');
 
 require('dotenv').config();
 const config = require('../config/config');
+const AlunoModel = require('../models/AlunoModel');
 
-function createAluno (req, res) {
+async function createAluno (req, res) {
     const options = {
         url: `${config.baseApiUrl}/students`,
         headers: {
@@ -64,7 +65,7 @@ function createAluno (req, res) {
             },
         }
     };
-    request.post(options, (error, response, body) => {
+    request.post(options, async (error, response, body) => {
         if (error) {
             console.error(error);
             return res.status(500).send({ error: 'Internal Server Error' });
@@ -72,6 +73,7 @@ function createAluno (req, res) {
         console.log('HTTP response code:', response.statusCode);
         try {
             if(response.statusCode === 201) {
+            await AlunoModel.createAluno(req.body);
             res.status(201).send({
                 message: "User created successfully",
             });
