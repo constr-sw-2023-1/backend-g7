@@ -1,0 +1,41 @@
+{
+    "alunos": [{
+        "matricula": "2023001",
+        "nome": "João da Silva",
+        "email": "joao.silva@exemplo.com",
+        "curso": "Engenharia de Software",
+        "curriculo": {
+            "formacao": [{
+                    "curso": "Ensino Médio",
+                    "instituicao": "Colégio XYZ",
+                    "conclusao": "2018"
+                },
+                {
+                    "curso": "Graduação",
+                    "instituicao": "Universidade ABC",
+                    "conclusao": "2022"
+                }
+            ],
+            "experiencia_profissional": [{
+                    "cargo": "Estagiário de Desenvolvimento",
+                    "empresa": "12345678901234",
+                    "periodo": "01/2021 - 06/2021"
+                },
+                {
+                    "cargo": "Desenvolvedor Júnior",
+                    "empresa": "54321678901234",
+                    "periodo": "07/2021 - presente"
+                }
+            ]
+        }
+    }],
+    "empresas": [{
+            "cnpj": "12345678901234",
+            "nome": "Empresa X"
+        },
+        {
+            "cnpj": "54321678901234",
+            "nome": "Empresa Y"
+        }
+    ]
+}
