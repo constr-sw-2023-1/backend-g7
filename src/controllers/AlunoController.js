@@ -2,9 +2,9 @@ const request = require('request');
 
 require('dotenv').config();
 const config = require('../config/config');
-const AlunoModel = require('../models/AlunoModel');
+const StudentModel = require('../models/StudentModel');
 
-async function createAluno (req, res) {
+async function createStudent (req, res) {
     const options = {
         url: `${config.baseApiUrl}/students`,
         headers: {
@@ -73,7 +73,7 @@ async function createAluno (req, res) {
         console.log('HTTP response code:', response.statusCode);
         try {
             if(response.statusCode === 201) {
-            await AlunoModel.createAluno(req.body);
+            await StudentModel.createStudent(req.body);
             res.status(201).send({
                 message: "User created successfully",
             });
@@ -89,7 +89,7 @@ async function createAluno (req, res) {
     
 }
 
-function deleteAluno(req, res) {
+function deleteStudent(req, res) {
     const options = {
         url: `${config.baseApiUrl}/students/${req.params.id}`,
         headers: {
@@ -118,7 +118,7 @@ function deleteAluno(req, res) {
     });
 }
 
-function updateAluno(req, res) {
+function updateStudent(req, res) {
     const options = {
         url: `${config.baseApiUrl}/students/${req.params.id}`,
         headers: {
@@ -152,7 +152,7 @@ function updateAluno(req, res) {
     });
 }
 
-function updateAlunoByAttribute(req, res) {
+function updateStudentByAttribute(req, res) {
     const options = {
         url: `${config.baseApiUrl}/students/${req.params.id}/student-data`,
         headers: {
@@ -192,7 +192,7 @@ function updateAlunoByAttribute(req, res) {
     });
 }
 
-function listAlunos(req, res) {
+function listStudents(req, res) {
     const options = {
         url: `${config.baseApiUrl}/students/${req.params.id}`,
         headers: {
@@ -231,7 +231,7 @@ function listAlunos(req, res) {
     });
 }
 
-function listAlunoById(req, res) {
+function listStudentById(req, res) {
     const options = {
         url: `${config.baseApiUrl}/students/${req.params.id}`,
         headers: {
@@ -268,4 +268,4 @@ function listAlunoById(req, res) {
 
 
 
-module.exports = { createAluno, deleteAluno, updateAluno, updateAlunoByAttribute, listAlunos, listAlunoById};
+module.exports = { createStudent, deleteStudent, updateStudent, updateStudentByAttribute, listStudents, listStudentById};

@@ -1,4 +1,4 @@
-const AlunoSchema = {
+const StudentSchema = {
     id: { type: String, required: true },
     createdTimestamp: { type: Number, required: true },
     enabled: { type: Boolean, required: true },
@@ -37,4 +37,4 @@ const AlunoSchema = {
     },
 };
 
-module.exports = AlunoSchema;
+module.exports = StudentSchema;
