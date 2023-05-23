@@ -8,7 +8,7 @@ lerna-debug.log*
 .pnpm-debug.log*
 
 # DB Settings
-data/
+data/*
 
 # Dependency directories
 node_modules/
