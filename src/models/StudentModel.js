@@ -1,7 +1,11 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  //conexao bd
+  host: 'localhost',
+  port: 5432,
+  user: 'root',
+  password: 'root',
+  database: 'studentDb'
 });
 
 class StudentModel {
@@ -22,6 +26,13 @@ class StudentModel {
   }
 
   static async listStudents() {
+    try {
+      const query = 'SELECT * FROM students';
+      const result = await pool.query(query);
+      return result.rows;
+    } catch (error) {
+      throw new Error(`Erro ao listar estudantes: ${error.message}`);
+    }
   }
 }
 
