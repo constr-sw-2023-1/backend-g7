@@ -194,10 +194,8 @@ function updateStudentByAttribute(req, res) {
 
 async function listStudents(req, res) {
     try {
-        // Chamar a função listStudents da classe StudentModel
         const students = await StudentModel.listStudents();
 
-        // Exibir as informações retornadas na resposta
         res.status(200).send({
             message: "Students listed successfully",
             students: students
@@ -207,13 +205,13 @@ async function listStudents(req, res) {
         res.status(500).send({ error: 'Internal Server Error' });
     }
 }
+
 function listStudentById(req, res) {
     const options = {
-        url: `${config.baseApiUrl}/students/${req.params.id}`,
-        headers: {
-            Authorization: req.headers.authorization
-        },
+        url: `postgres/students/${req.params.id}`,
+        host:'localhost'
     };
+    console.log('passou');
     request.get(options, (error, response, body) => {
         if (error) {
             console.error(error);
@@ -225,7 +223,7 @@ function listStudentById(req, res) {
                 const data = JSON.parse(body);
                 console.log('JSON:',data);
                 res.status(statusCode).send({
-                    message: "User listed successfully",
+                    message: "Student listed successfully",
                     user: data
                 });
             } catch (error) {
@@ -235,7 +233,7 @@ function listStudentById(req, res) {
         } else if (statusCode === 401) {
             return res.status(statusCode).send({ message: 'Invalid Token' });
         } else if (statusCode === 404) {
-            return res.status(statusCode).send({ message: 'User Not Found' });
+            return res.status(statusCode).send({ message: 'Student Not Found' });
         } else {
             return res.status(500).send({ error: 'Internal Server Error' });
         }

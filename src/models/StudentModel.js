@@ -1,7 +1,7 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  host: 'localhost',
+  host: 'backend-g7-db-1',
   port: 5432,
   user: 'root',
   password: 'root',
@@ -23,12 +23,22 @@ class StudentModel {
   }
 
   static async listStudentById(id) {
+    try {
+      const query = 'SELECT * FROM aluno WHERE id = $1';
+      const values = [id];
+      const result = await pool.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      throw new Error(`Erro ao obter estudante por ID: ${error.message}`);
+    }
   }
 
   static async listStudents() {
     try {
-      const query = 'SELECT * FROM students';
-      const result = await pool.query(query);
+      const client = await pool.connect();
+      const query = 'SELECT * FROM aluno';
+      const result = await client.query(query);
+      client.release();
       return result.rows;
     } catch (error) {
       throw new Error(`Erro ao listar estudantes: ${error.message}`);
