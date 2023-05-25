@@ -206,38 +206,23 @@ async function listStudents(req, res) {
     }
 }
 
-function listStudentById(req, res) {
-    const options = {
-        url: `${config.baseApiUrl}/students/${req.params.id}`,
-    };
-    console.log('passou');
-    request.get(options, (error, response, body) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).send({ error: 'Internal Server Error' });
-        }
-        const statusCode = response.statusCode;
-        if (statusCode === 200) {
-            try {
-                const data = JSON.parse(body);
-                console.log('JSON:',data);
-                res.status(statusCode).send({
-                    message: "Student listed successfully",
-                    user: data
-                });
-            } catch (error) {
-                console.error(error);
-                return res.status(500).send({ error: 'Internal Server Error' });
+    async function listStudentById(req, res) {
+        try {
+            const student = await StudentModel.listStudentById(req.params.id);
+    
+            if (!student) {
+                return res.status(404).send({ message: 'Student Not Found' });
             }
-        } else if (statusCode === 401) {
-            return res.status(statusCode).send({ message: 'Invalid Token' });
-        } else if (statusCode === 404) {
-            return res.status(statusCode).send({ message: 'Student Not Found' });
-        } else {
+    
+            return res.status(200).send({
+                message: 'Student listed successfully',
+                user: student,
+            });
+        } catch (error) {
+            console.error('Error:', error);
             return res.status(500).send({ error: 'Internal Server Error' });
         }
-    });
-}
+    }
 
 
 
