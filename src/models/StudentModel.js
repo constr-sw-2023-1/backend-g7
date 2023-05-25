@@ -35,10 +35,8 @@ class StudentModel {
 
   static async listStudents() {
     try {
-      const client = await pool.connect();
       const query = 'SELECT * FROM aluno';
-      const result = await client.query(query);
-      client.release();
+      const result = await pool.query(query);
       return result.rows;
     } catch (error) {
       throw new Error(`Erro ao listar estudantes: ${error.message}`);

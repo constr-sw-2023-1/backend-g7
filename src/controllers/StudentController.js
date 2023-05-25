@@ -208,8 +208,7 @@ async function listStudents(req, res) {
 
 function listStudentById(req, res) {
     const options = {
-        url: `postgres/students/${req.params.id}`,
-        host:'localhost'
+        url: `${config.baseApiUrl}/students/${req.params.id}`,
     };
     console.log('passou');
     request.get(options, (error, response, body) => {
