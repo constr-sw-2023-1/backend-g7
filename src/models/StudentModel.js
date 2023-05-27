@@ -24,7 +24,7 @@ class StudentModel {
 
   static async listStudentById(id) {
     try {
-      const query = 'SELECT * FROM aluno WHERE id = $1';
+      const query = 'SELECT * FROM aluno WHERE aluno_id = $1';
       const values = [id];
       const result = await pool.query(query, values);
       return result.rows[0];
