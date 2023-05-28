@@ -1,4 +1,5 @@
 const StudentModel = require('../models/StudentModel');
+const ApiError = require('../errors/ApiError');
 
 async function createStudent (req, res) {
     try {
@@ -37,7 +38,7 @@ async function updateStudent(req, res) {
     }
 }
 
-async function updateStudentByAttribute(req, res) {
+async function updateStudentByAttribute(req, res, next) {
     const { id } = req.params;
     const newData = req.body;
 
@@ -45,11 +46,14 @@ async function updateStudentByAttribute(req, res) {
         const updatedStudent = await StudentModel.updateStudentByAttribute(id, newData);
         res.json(updatedStudent);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        if(!updateStudent){
+            next(ApiError.notFound('Student not found'));
+            return;
+        }
     }
 }
 
-async function listStudents(req, res) {
+async function listStudents(req, res, next) {
     try {
         const students = await StudentModel.listStudents();
 
@@ -58,8 +62,10 @@ async function listStudents(req, res) {
             students: students
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: 'Internal Server Error' });
+        if(!updateStudent){
+            next(ApiError.notFound('Student not found'));
+            return;
+        }
     }
 }
 
