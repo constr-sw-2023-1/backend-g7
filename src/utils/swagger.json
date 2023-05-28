@@ -1,0 +1,315 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "Backend-G7",
+    "description": "Microserviço de Alunos - API de Backend em Node.js com PostgreSQL.",
+    "contact": {
+      "email": "brunoramos013@gmail.com"
+    },
+    "version": "v0.0.1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Student",
+      "description": "Get Student Information"
+    },
+    {
+      "name": "Students Management",
+      "description": "Manage Students in the system"
+    }
+  ],
+  "paths": {
+    "/Students": {
+      "post": {
+        "tags": [
+          "Students Management"
+        ],
+        "summary": "Create Student",
+        "description": " Create a new Student in the system.",
+        "operationId": "createStudent",
+        "requestBody": {
+          "description": "Created Student object",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Student"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Student created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "List Students",
+        "description": "Get a list of Students in the system.",
+        "operationId": "listStudents",
+        "responses": {
+          "200": {
+            "description": "successful operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    },
+    "/Students/{id}": {
+      "get": {
+        "tags": [
+          "Student"
+        ],
+        "summary": "Get Student By ID",
+        "description": "",
+        "operationId": "getStudentByID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "The ID that needs to be fetched.",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Student Listed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Student"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid Token "
+          },
+          "404": {
+            "description": "Student Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Students Management"
+        ],
+        "summary": "Update Student",
+        "operationId": "updateStudent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "ID of Student that needs to be updated",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Update an existent Student in the System",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Student"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Student Updated"
+          },
+          "404": {
+            "description": "Student Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Students Management"
+        ],
+        "summary": "Delete Student",
+        "operationId": "deleteStudent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Insert the ID of the Student that needs to be deleted",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Student deleted"
+          },
+          "404": {
+            "description": "Student not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "Students Management"
+        ],
+        "summary": "Update Student",
+        "operationId": "updateStudent",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Update an existent Student in the System",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Student"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Student Updated"
+          },
+          "404": {
+            "description": "Student Not Found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Student": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "createdTimestamp": {
+            "type": "number"
+          },
+          "Studentname": {
+            "type": "string",
+            "required": true
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "totp": {
+            "type": "boolean"
+          },
+          "emailVerified": {
+            "type": "boolean"
+          },
+          "firstName": {
+            "type": "string",
+            "default": ""
+          },
+          "lastName": {
+            "type": "string",
+            "default": ""
+          },
+          "email": {
+            "type": "string",
+            "default": ""
+          },
+          "disableableCredentialTypes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "requiredActions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "notBefore": {
+            "type": "number"
+          },
+          "access": {
+            "type": "object",
+            "properties": {
+              "manageGroupMembership": {
+                "type": "boolean"
+              },
+              "view": {
+                "type": "boolean"
+              },
+              "mapRoles": {
+                "type": "boolean"
+              },
+              "impersonate": {
+                "type": "boolean"
+              },
+              "manage": {
+                "type": "boolean"
+              }
+            }
+          },
+          "realmRoles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}
