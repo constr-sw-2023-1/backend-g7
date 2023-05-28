@@ -5,88 +5,16 @@ const config = require('../config/config');
 const StudentModel = require('../models/StudentModel');
 
 async function createStudent (req, res) {
-    const options = {
-        url: `${config.baseApiUrl}/students`,
-        headers: {
-            'Authorization': req.headers.authorization,
-            'Content-Type': 'application/json'
-        },
-        json: {
-            "createdTimestamp": 1588880747548,
-            "username": "Joao da Silva",
-            "enabled": true,
-            "totp": false,
-            "emailVerified": true,
-            "firstName": "Joao",
-            "lastName": "da Silva",
-            "email": "joaosilva@email.com",
-            "curriculum": {
-                "schooling": [{
-                        "graduation": "Ensino Médio",
-                        "institution": "Colégio XYZ",
-                        "conclusion": 2018,
-                    },
-                    {
-                        "graduation": "Graduação",
-                        "institution": "Universidade ABC",
-                        "conclusion": 2022, 
-                    }
-                ],
-                "professionalExperience": [{
-                        "position": "Estagiário de Desenvolvimento",
-                        "contractor": "12345678901234",
-                        "contractTime": "01/2021 - 06/2021",
-                    },
-                    {
-                        "position": "Desenvolvedor Júnior",
-                        "contractor": "54321678901234",
-                        "contractTime": "07/2021 - presente",
-                    }
-                ]
-            },
-            "contractors": [{
-                
-                    "taxpayerIdNum": 12345678901234,
-                    "name": "Empresa X",
-                },
-                {
-                    "taxpayerIdNum": 54321678901234,
-                    "name": "Empresa Y",  
-                },
-            ],
-            "requiredActions": [],
-            "notBefore": 0,
-            "access": {
-                "manageGroupMembership": true,
-                "view": true,
-                "mapRoles": true,
-                "impersonate": true,
-                "manage": true
-            },
-        }
-    };
-    request.post(options, async (error, response, body) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).send({ error: 'Internal Server Error' });
-        }
-        console.log('HTTP response code:', response.statusCode);
-        try {
-            if(response.statusCode === 201) {
-            await StudentModel.createStudent(req.body);
-            res.status(201).send({
-                message: "User created successfully",
-            });
-            } else {
-                throw new Error(`Unexpected response status code: ${response.statusCode}`);
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).send({ error: 'Internal Server Error' });
-        }
-    });
-    
-    
+    try {
+        const student = await StudentModel.createStudent(req.body);
+        res.status(201).send({
+            message: "User created successfully",
+            data: student
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
 }
 
 function deleteStudent(req, res) {

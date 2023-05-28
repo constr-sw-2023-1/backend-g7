@@ -10,9 +10,66 @@ const pool = new Pool({
 
 class StudentModel {
 
-  //  Create a new student
+  //  Create a new student ( Funcionando )
   static async createStudent(student) {
+    try {
+      const query = 'INSERT INTO aluno (aluno_id, matricula, nome, email, curso) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+      const values = [
+        student.id,
+        student.registration,
+        student.name,
+        student.email,
+        student.course
+      ];
+
+      const result = await pool.query(query, values);
+
+      const createdStudent = result.rows[0];
+
+      // Verifica se o currículo está presente e atribui as informações correspondentes
+      if (student.curriculum) {
+        const { schooling, professionalExperience } = student.curriculum;
+
+        // Insere as informações de escolaridade (schooling) na tabela formacao
+        if (schooling && Array.isArray(schooling)) {
+          for (const education of schooling) {
+            const educationQuery = 'INSERT INTO formacao (aluno_id, escolaridade, conclusao, instituicao) VALUES ($1, $2, $3, $4)';
+            const educationValues = [
+              createdStudent.aluno_id,
+              education.graduation,
+              education.conclusion,
+              education.institution
+            ];
+
+            await pool.query(educationQuery, educationValues);
+          }
+        }
+
+        // Insere as informações de experiência profissional (professionalExperience) na tabela experiencia_profissional
+        if (professionalExperience && Array.isArray(professionalExperience)) {
+          for (const experience of professionalExperience) {
+            const experienceQuery = 'INSERT INTO experiencia_profissional (aluno_id, cargo, empresa_id, data_inicio, data_termino, em_andamento) VALUES ($1, $2, $3, $4, $5, $6)';
+            const experienceValues = [
+              createdStudent.aluno_id,
+              experience.position,
+              experience.contractor,
+              experience.contractTime.startDate,
+              experience.contractTime.endDate,
+              experience.contractTime.ongoing
+            ];
+
+            await pool.query(experienceQuery, experienceValues);
+          }
+        }
+      }
+
+      return createdStudent;
+    } catch (error) {
+      throw new Error(`Erro ao criar aluno: ${error.message}`);
+    }
   }
+
+
 
   //  Delete a student
   static async deleteStudent(id) {
