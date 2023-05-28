@@ -206,23 +206,23 @@ async function listStudents(req, res) {
     }
 }
 
-    async function listStudentById(req, res) {
-        try {
-            const student = await StudentModel.listStudentById(req.params.id);
-    
-            if (!student) {
-                return res.status(404).send({ message: 'Student Not Found' });
-            }
-    
-            return res.status(200).send({
-                message: 'Student listed successfully',
-                user: student,
-            });
-        } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).send({ error: 'Internal Server Error' });
+async function listStudentById(req, res) {
+    try {
+        const student = await StudentModel.listStudentById(req.params.id);
+
+        if (!student) {
+            return res.status(404).send({ message: 'Student Not Found' });
         }
+    
+        return res.status(200).send({
+            message: 'Student listed successfully',
+            user: student,
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).send({ error: 'Internal Server Error' });
     }
+}
 
 
 
