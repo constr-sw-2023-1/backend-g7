@@ -2,7 +2,6 @@ const pool = require('../utils/database');
 
 class StudentModel {
 
-    //  Create a new student ( Funcionando )
     static async createStudent(student) {
         try {
             const query = 'INSERT INTO aluno (aluno_id, matricula, nome, email, curso) VALUES ($1, $2, $3, $4, $5) RETURNING *';
@@ -18,11 +17,9 @@ class StudentModel {
 
             const createdStudent = result.rows[0];
 
-            // Verifica se o currículo está presente e atribui as informações correspondentes
             if (student.curriculum) {
                 const {schooling, professionalExperience} = student.curriculum;
 
-                // Insere as informações de escolaridade (schooling) na tabela formacao
                 if (schooling && Array.isArray(schooling)) {
                     for (const education of schooling) {
                         const educationQuery = 'INSERT INTO formacao (aluno_id, escolaridade, conclusao, instituicao) VALUES ($1, $2, $3, $4)';
@@ -37,7 +34,6 @@ class StudentModel {
                     }
                 }
 
-                // Insere as informações de experiência profissional (professionalExperience) na tabela experiencia_profissional
                 if (professionalExperience && Array.isArray(professionalExperience)) {
                     for (const experience of professionalExperience) {
                         const experienceQuery = 'INSERT INTO experiencia_profissional (aluno_id, cargo, empresa_id, data_inicio, data_termino, em_andamento) VALUES ($1, $2, $3, $4, $5, $6)';
@@ -54,25 +50,20 @@ class StudentModel {
                     }
                 }
             }
-
             return createdStudent;
         } catch (error) {
             throw new Error(`Erro ao criar aluno: ${error.message}`);
         }
     }
 
-    //  Delete a student ( Funcionando )
     static async deleteStudent(id) {
         try {
-            // Excluir registros relacionados da tabela experiencia_profissional
             const deleteExperienceQuery = 'DELETE FROM experiencia_profissional WHERE aluno_id = $1';
             await pool.query(deleteExperienceQuery, [id]);
 
-            // Excluir registros relacionados da tabela formacao
             const deleteEducationQuery = 'DELETE FROM formacao WHERE aluno_id = $1';
             await pool.query(deleteEducationQuery, [id]);
 
-            // Excluir aluno da tabela aluno
             const deleteStudentQuery = 'DELETE FROM aluno WHERE aluno_id = $1';
             await pool.query(deleteStudentQuery, [id]);
 
@@ -82,10 +73,8 @@ class StudentModel {
         }
     }
 
-    //  Update a student ( Funcionando )
     static async updateStudent(id, newData) {
         try {
-
             const checkQuery = 'SELECT * FROM aluno WHERE aluno_id = $1';
             const checkResult = await pool.query(checkQuery, [id]);
 
@@ -182,11 +171,10 @@ class StudentModel {
         }
     }
 
-    //  Update a student by attribute
     static async updateStudentByAttribute(id, newData) {
+
     }
 
-    //  List all students ( Funcionando )
     static async listStudents() {
         try {
             const query = 'SELECT * FROM aluno';
@@ -197,7 +185,6 @@ class StudentModel {
         }
     }
 
-    //  List a student by ID ( Funcionando )
     static async listStudentById(id) {
         try {
             const query = 'SELECT * FROM aluno WHERE aluno_id = $1';
@@ -209,7 +196,6 @@ class StudentModel {
         }
     }
 
-    //  List a student by simple query string ( Funcionando )
     static async listStudentByQueryString(filters) {
         try {
             let sql = 'SELECT * FROM aluno';
@@ -227,20 +213,16 @@ class StudentModel {
 
                     if (typeof filterValue === 'string') {
                         if (/^\d+$/.test(filterValue)) {
-                            // O valor é uma string que contém apenas dígitos (inteiro)
                             filterOperator = '=';
                             values.push(parseInt(filterValue));
                         } else {
-                            // O valor é uma string que não é um inteiro
                             filterOperator = 'ILIKE';
                             values.push(filterValue.toLowerCase());
                         }
                     }
-
                     sql += `${key} ${filterOperator} $${index + 1}`;
                 });
             }
-
             const result = await pool.query(sql, values);
             return result.rows;
         } catch (error) {
@@ -248,7 +230,6 @@ class StudentModel {
         }
     }
 
-    // List a student by complex query string
     static async listStudentByComplexQueryString(resource, query) {
     }
 }
