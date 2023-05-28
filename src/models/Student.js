@@ -15,7 +15,7 @@ const StudentSchema = {
             }
         ],
 
-        professionalExperience: { type: NodeList } [{
+        professional_experience: { type: NodeList } [{
             position: { type: String },
             contractor: { type: String },
             contractTime: { type: String },

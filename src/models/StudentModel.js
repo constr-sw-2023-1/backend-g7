@@ -4,7 +4,7 @@ class StudentModel {
 
     static async createStudent(student) {
         try {
-            const query = 'INSERT INTO aluno (aluno_id, matricula, nome, email, curso) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+            const query = 'INSERT INTO aluno (aluno_id, registration, name, email, course) VALUES ($1, $2, $3, $4, $5) RETURNING *';
             const values = [
                 student.id,
                 student.registration,
@@ -18,11 +18,11 @@ class StudentModel {
             const createdStudent = result.rows[0];
 
             if (student.curriculum) {
-                const {schooling, professionalExperience} = student.curriculum;
+                const {schooling, professional_experience} = student.curriculum;
 
                 if (schooling && Array.isArray(schooling)) {
                     for (const education of schooling) {
-                        const educationQuery = 'INSERT INTO formacao (aluno_id, escolaridade, conclusao, instituicao) VALUES ($1, $2, $3, $4)';
+                        const educationQuery = 'INSERT INTO schooling (aluno_id, graduation, conclusion, institution) VALUES ($1, $2, $3, $4)';
                         const educationValues = [
                             createdStudent.aluno_id,
                             education.graduation,
@@ -34,15 +34,15 @@ class StudentModel {
                     }
                 }
 
-                if (professionalExperience && Array.isArray(professionalExperience)) {
-                    for (const experience of professionalExperience) {
-                        const experienceQuery = 'INSERT INTO experiencia_profissional (aluno_id, cargo, empresa_id, data_inicio, data_termino, em_andamento) VALUES ($1, $2, $3, $4, $5, $6)';
+                if (professional_experience && Array.isArray(professional_experience)) {
+                    for (const experience of professional_experience) {
+                        const experienceQuery = 'INSERT INTO professional_experience (aluno_id, position, contractor_id, start_Date, end_Date, ongoing) VALUES ($1, $2, $3, $4, $5, $6)';
                         const experienceValues = [
                             createdStudent.aluno_id,
                             experience.position,
-                            experience.contractor,
-                            experience.contractTime.startDate,
-                            experience.contractTime.endDate,
+                            experience.contractor_id,
+                            experience.contractTime.start_Date,
+                            experience.contractTime.end_Date,
                             experience.contractTime.ongoing
                         ];
 
@@ -58,10 +58,10 @@ class StudentModel {
 
     static async deleteStudent(id) {
         try {
-            const deleteExperienceQuery = 'DELETE FROM experiencia_profissional WHERE aluno_id = $1';
+            const deleteExperienceQuery = 'DELETE FROM professional_experience WHERE aluno_id = $1';
             await pool.query(deleteExperienceQuery, [id]);
 
-            const deleteEducationQuery = 'DELETE FROM formacao WHERE aluno_id = $1';
+            const deleteEducationQuery = 'DELETE FROM schooling WHERE aluno_id = $1';
             await pool.query(deleteEducationQuery, [id]);
 
             const deleteStudentQuery = 'DELETE FROM aluno WHERE aluno_id = $1';
@@ -85,52 +85,52 @@ class StudentModel {
             const updateAlunoQuery = `
       UPDATE aluno
       SET
-        nome = $1,
+        name = $1,
         email = $2,
-        curso = $3
+        course = $3
       WHERE aluno_id = $4
       RETURNING *
     `;
 
             const updateAlunoValues = [
-                newData.nome,
+                newData.name,
                 newData.email,
-                newData.curso,
+                newData.course,
                 id
             ];
 
             const alunoResult = await pool.query(updateAlunoQuery, updateAlunoValues);
 
             const updateExperienceQuery = `
-      UPDATE experiencia_profissional
+      UPDATE professional_experience 
       SET
-        cargo = $1,
-        empresa_id = $2,
-        data_inicio = $3,
-        data_termino = $4,
-        em_andamento = $5
+        position = $1,
+        contractor_id = $2,
+        start_Date = $3,
+        end_Date = $4,
+        ongoing = $5
       WHERE aluno_id = $6
       RETURNING *
     `;
 
             const updateFormacaoQuery = `
-      UPDATE formacao
+      UPDATE schooling 
       SET
-        escolaridade = $1,
-        conclusao = $2,
-        instituicao = $3
+        graduation = $1,
+        conclusion = $2,
+        institution = $3
       WHERE aluno_id = $4
       RETURNING *
     `;
 
             const curriculum = newData.curriculum;
 
-            const updateExperiencePromises = curriculum.professionalExperience.map(async (experience) => {
+            const updateExperiencePromises = curriculum.professional_experience.map(async (experience) => {
                 const updateExperienceValues = [
                     experience.position,
-                    experience.contractor,
-                    experience.contractTime.startDate,
-                    experience.contractTime.endDate,
+                    experience.contractor_id,
+                    experience.contractTime.start_Date,
+                    experience.contractTime.end_Date,
                     experience.contractTime.ongoing,
                     id
                 ];
@@ -161,7 +161,7 @@ class StudentModel {
             return {
                 aluno: alunoResult.rows[0],
                 curriculum: {
-                    professionalExperience: experienceResults.map((result) => result.rows[0]),
+                    professional_experience: experienceResults.map((result) => result.rows[0]),
                     schooling: formacaoResults.map((result) => result.rows[0])
                 }
             };
