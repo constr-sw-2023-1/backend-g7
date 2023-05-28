@@ -9,11 +9,11 @@ lerna-debug.log*
 
 
 # DB Settings
-data/
+
 
 # Dependency directories
 node_modules/
-
+data/
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
