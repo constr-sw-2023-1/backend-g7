@@ -90,32 +90,15 @@ async function createStudent (req, res) {
 }
 
 function deleteStudent(req, res) {
-    const options = {
-        url: `${config.baseApiUrl}/students/${req.params.id}`,
-        headers: {
-            Authorization: req.headers.authorization
-        }
-    };
-    request.delete(options, (error, response, body) => {
-        if (error) {
-            console.error(error);
-            return res.status(500).send({ error: 'Internal Server Error' });
-        }
-        try {
-            if (response.statusCode === 204) {
-                res.status(204).send({message: "User Deleted Successfully"});
-            } else if (response.statusCode === 404) {
-                res.status(404).send({ error: 'User Not Found' });
-            } else if (response.statusCode === 401) {
-                res.status(401).send({ error: 'Invalid Token' });
-            } else {
-                throw new Error(`Unexpected response status code: ${response.statusCode}`);
-            }
-        } catch (error) {
-            console.error(error);
-            res.status(500).send({ error: 'Internal Server Error' });
-        }
-    });
+    try {
+        StudentModel.deleteStudent(req.params.id);
+        res.status(200).send({
+            message: "User deleted successfully",
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(500).send({ error: 'Internal Server Error' });
+    }
 }
 
 function updateStudent(req, res) {
@@ -206,7 +189,7 @@ async function listStudents(req, res) {
     }
 }
 
-    async function listStudentById(req, res) {
+async function listStudentById(req, res) {
         try {
             const student = await StudentModel.listStudentById(req.params.id);
     
@@ -224,6 +207,16 @@ async function listStudents(req, res) {
         }
     }
 
+async function listStudentByQueryString(req, res) {
+    try {
+        const filters = req.query; // Obtém os parâmetros de filtro da requisição
 
+        const result = await StudentModel.listStudentByQueryString(filters); // Chama a função que faz a consulta no banco de dados
+        res.json(result);
+    } catch (error) {
+        console.error('Error:', error);
+        return res.status(500).send({ error: 'Internal Server Error' });
+    }
+}
 
-module.exports = { createStudent, deleteStudent, updateStudent, updateStudentByAttribute, listStudents, listStudentById};
+module.exports = { createStudent, deleteStudent, updateStudent, updateStudentByAttribute, listStudents, listStudentById, listStudentByQueryString};
