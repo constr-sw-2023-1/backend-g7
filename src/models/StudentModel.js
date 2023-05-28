@@ -69,10 +69,25 @@ class StudentModel {
     }
   }
 
-
-
   //  Delete a student
   static async deleteStudent(id) {
+    try {
+      // Excluir registros relacionados da tabela experiencia_profissional
+      const deleteExperienceQuery = 'DELETE FROM experiencia_profissional WHERE aluno_id = $1';
+      await pool.query(deleteExperienceQuery, [id]);
+
+      // Excluir registros relacionados da tabela formacao
+      const deleteEducationQuery = 'DELETE FROM formacao WHERE aluno_id = $1';
+      await pool.query(deleteEducationQuery, [id]);
+
+      // Excluir aluno da tabela aluno
+      const deleteStudentQuery = 'DELETE FROM aluno WHERE aluno_id = $1';
+      await pool.query(deleteStudentQuery, [id]);
+
+      return true;
+    } catch (error) {
+      throw new Error(`Erro ao excluir aluno: ${error.message}`);
+    }
   }
 
   //  Update a student
