@@ -16,11 +16,11 @@ function checkStudentFilters(req, res, next) {
 }
 
 routes.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-routes.post('/students', StudentController.createStudent); // Funcionando
-routes.delete('/students/:id', StudentController.deleteStudent); // Funcionando
-routes.put('/students/:id', StudentController.updateStudent); // Funcionando
+routes.post('/students', StudentController.createStudent);
+routes.delete('/students/:id', StudentController.deleteStudent);
+routes.put('/students/:id', StudentController.updateStudent);
 routes.patch('/students/:id', StudentController.updateStudentByAttribute);
-routes.get('/students/:id', StudentController.listStudentById); //Funcionando
-routes.get('/students', checkStudentFilters); // Funcionando
+routes.get('/students/:id', StudentController.listStudentById);
+routes.get('/students', checkStudentFilters);
 
 module.exports = routes;
