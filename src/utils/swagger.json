@@ -33,7 +33,7 @@
         "description": " Create a New Student In The System.",
         "operationId": "createStudent",
         "requestBody": {
-          "description": "Created Student Object",
+          "description": "Student Object",
           "content": {
             "application/json": {
               "schema": {

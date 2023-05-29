@@ -4,24 +4,25 @@ class StudentModel {
 
     static async createStudent(student) {
         try {
-            const query = 'INSERT INTO student (registration, name, email, course) VALUES ($1, $2, $3, $4) RETURNING *';
-            const values = [
+            const createStudentQuery = 'INSERT INTO student (registration, name, email, course) VALUES ($1, $2, $3, $4) RETURNING *';
+            const studentValues = [
                 student.registration,
                 student.name,
                 student.email,
                 student.course
             ];
 
-            const result = await pool.query(query, values);
-
-            const createdStudent = result.rows[0];
+            const studentResult = await pool.query(createStudentQuery, studentValues);
+            const createdStudent = studentResult.rows[0];
+            createdStudent.schooling = [];
+            createdStudent.professional_experience = [];
 
             if (student.curriculum) {
                 const {schooling, professional_experience} = student.curriculum;
 
                 if (schooling && Array.isArray(schooling)) {
                     for (const education of schooling) {
-                        const educationQuery = 'INSERT INTO schooling (student_id, graduation, conclusion, institution) VALUES ($1, $2, $3, $4)';
+                        const createSchoolingQuery = 'INSERT INTO schooling (student_id, graduation, conclusion, institution) VALUES ($1, $2, $3, $4) RETURNING *';
                         const educationValues = [
                             createdStudent.student_id,
                             education.graduation,
@@ -29,26 +30,31 @@ class StudentModel {
                             education.institution
                         ];
 
-                        await pool.query(educationQuery, educationValues);
+                        const educationResult = await pool.query(createSchoolingQuery, educationValues);
+                        const createdEducation = educationResult.rows[0];
+                        createdStudent.schooling.push(createdEducation);
                     }
                 }
 
                 if (professional_experience && Array.isArray(professional_experience)) {
                     for (const experience of professional_experience) {
-                        const experienceQuery = 'INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing) VALUES ($1, $2, $3, $4, $5, $6)';
+                        const createExperienceQuery = 'INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
                         const experienceValues = [
                             createdStudent.student_id,
                             experience.position,
                             experience.contractor_id,
-                            experience.contractTime.start_Date,
-                            experience.contractTime.end_Date,
+                            experience.contractTime.start_date,
+                            experience.contractTime.end_date,
                             experience.contractTime.ongoing
                         ];
 
-                        await pool.query(experienceQuery, experienceValues);
+                        const experienceResult = await pool.query(createExperienceQuery, experienceValues);
+                        const createdExperience = experienceResult.rows[0];
+                        createdStudent.professional_experience.push(createdExperience);
                     }
                 }
             }
+
             return createdStudent;
         } catch (error) {
             throw new Error(`Error When Creating Student: ${error.message}`);
@@ -57,6 +63,13 @@ class StudentModel {
 
     static async deleteStudent(id) {
         try {
+            const selectQuery = 'SELECT * FROM student WHERE student_id = $1';
+            const selectResult = await pool.query(selectQuery, [id]);
+
+            if (selectResult.rowCount === 0) {
+                return false;
+            }
+
             const deleteExperienceQuery = 'DELETE FROM professional_experience WHERE student_id = $1';
             await pool.query(deleteExperienceQuery, [id]);
 
@@ -176,9 +189,56 @@ class StudentModel {
 
     static async listStudents() {
         try {
-            const query = 'SELECT * FROM student';
+            const query = `
+            SELECT s.*, se.schooling_id, se.graduation, se.conclusion, se.institution, pe.experience_id, pe.position, pe.contractor_id, pe.start_date, pe.end_date, pe.ongoing
+            FROM student s
+            LEFT JOIN schooling se ON s.student_id = se.student_id
+            LEFT JOIN professional_experience pe ON s.student_id = pe.student_id
+        `;
             const result = await pool.query(query);
-            return result.rows;
+            const students = {};
+
+            for (const row of result.rows) {
+                const studentId = row.student_id;
+
+                if (!students[studentId]) {
+                    students[studentId] = {
+                        student_id: row.student_id,
+                        registration: row.registration,
+                        name: row.name,
+                        email: row.email,
+                        course: row.course,
+                        schooling: [],
+                        professional_experience: []
+                    };
+                }
+
+                if (row.schooling_id) {
+                    students[studentId].schooling.push({
+                        schooling_id: row.schooling_id,
+                        graduation: row.graduation,
+                        conclusion: row.conclusion,
+                        institution: row.institution
+                    });
+                }
+
+                if (row.experience_id) {
+                    students[studentId].professional_experience.push({
+                        experience_id: row.experience_id,
+                        position: row.position,
+                        contractor_id: row.contractor_id,
+                        start_date: row.start_date,
+                        end_date: row.end_date,
+                        ongoing: row.ongoing
+                    });
+                }
+            }
+
+            const studentList = Object.values(students);
+
+            return {
+                students: studentList
+            };
         } catch (error) {
             throw new Error(`Error When Listing Students: ${error.message}`);
         }
@@ -186,10 +246,52 @@ class StudentModel {
 
     static async listStudentById(id) {
         try {
-            const query = 'SELECT * FROM student WHERE student_id = $1';
+            const query = `
+            SELECT s.*, se.schooling_id, se.graduation, se.conclusion, se.institution, pe.experience_id, pe.position, pe.contractor_id, pe.start_date, pe.end_date, pe.ongoing
+            FROM student s
+            LEFT JOIN schooling se ON s.student_id = se.student_id
+            LEFT JOIN professional_experience pe ON s.student_id = pe.student_id
+            WHERE s.student_id = $1
+        `;
             const values = [id];
             const result = await pool.query(query, values);
-            return result.rows[0];
+            const student = {};
+
+            for (const row of result.rows) {
+                const studentId = row.student_id;
+
+                if (!student.student_id) {
+                    student.student_id = row.student_id;
+                    student.registration = row.registration;
+                    student.name = row.name;
+                    student.email = row.email;
+                    student.course = row.course;
+                    student.schooling = [];
+                    student.professional_experience = [];
+                }
+
+                if (row.schooling_id) {
+                    student.schooling.push({
+                        schooling_id: row.schooling_id,
+                        graduation: row.graduation,
+                        conclusion: row.conclusion,
+                        institution: row.institution
+                    });
+                }
+
+                if (row.experience_id) {
+                    student.professional_experience.push({
+                        experience_id: row.experience_id,
+                        position: row.position,
+                        contractor_id: row.contractor_id,
+                        start_date: row.start_date,
+                        end_date: row.end_date,
+                        ongoing: row.ongoing
+                    });
+                }
+            }
+
+            return student;
         } catch (error) {
             throw new Error(`Error When Retrieving Student By ID: ${error.message}`);
         }
@@ -197,31 +299,33 @@ class StudentModel {
 
     static async listStudentByQueryString(filters) {
         try {
-            let sql = 'SELECT * FROM student';
+            let sql = `SELECT s.*, se.*, pe.*, c.*
+                    FROM student AS s
+                    LEFT JOIN schooling AS se ON s.student_id = se.student_id
+                    LEFT JOIN professional_experience AS pe ON s.student_id = pe.student_id
+                    LEFT JOIN contractors AS c ON pe.contractor_id = c.contractor_id
+                    WHERE `;
             const values = [];
 
-            if (Object.keys(filters).length > 0) {
-                sql += ' WHERE ';
-                Object.keys(filters).forEach((key, index) => {
-                    if (index > 0) {
-                        sql += ' AND ';
-                    }
+            const filterConditions = [];
+            Object.keys(filters).forEach((key, index) => {
+                const filterValue = filters[key];
+                let filterOperator = '=';
 
-                    const filterValue = filters[key];
-                    let filterOperator = '=';
-
-                    if (typeof filterValue === 'string') {
-                        if (/^\d+$/.test(filterValue)) {
-                            filterOperator = '=';
-                            values.push(parseInt(filterValue));
-                        } else {
-                            filterOperator = 'ILIKE';
-                            values.push(filterValue.toLowerCase());
-                        }
+                if (typeof filterValue === 'string') {
+                    if (/^\d+$/.test(filterValue)) {
+                        filterOperator = '=';
+                        values.push(parseInt(filterValue));
+                    } else {
+                        filterOperator = 'ILIKE';
+                        values.push(filterValue.toLowerCase());
                     }
-                    sql += `${key} ${filterOperator} $${index + 1}`;
-                });
-            }
+                }
+                filterConditions.push(`s.${key} ${filterOperator} $${index + 1}`);
+            });
+
+            sql += filterConditions.join(' AND ');
+
             const result = await pool.query(sql, values);
             return result.rows;
         } catch (error) {
@@ -229,7 +333,110 @@ class StudentModel {
         }
     }
 
-    static async listStudentByComplexQueryString(resource, query) {
+    static async listStudentsWithOperators(filters) {
+        try {
+            let sql = `
+    SELECT s.student_id, s.registration, s.name, s.email, s.course,
+           se.schooling_id, se.graduation, se.conclusion, se.institution,
+           pe.experience_id, pe.position, pe.contractor_id, pe.start_date, pe.end_date, pe.ongoing,
+           c.contractor
+    FROM student AS s
+    LEFT JOIN schooling AS se ON s.student_id = se.student_id
+    LEFT JOIN professional_experience AS pe ON s.student_id = pe.student_id
+    LEFT JOIN contractors AS c ON pe.contractor_id = c.contractor_id`;
+
+            const values = [];
+            const operators = {
+                eq: '=',
+                neq: '<>',
+                gt: '>',
+                gteq: '>=',
+                lt: '<',
+                lteq: '<=',
+                like: 'ILIKE',
+            };
+
+            if (filters.length > 0) {
+                sql += ' WHERE ';
+                const filterConditions = [];
+
+                filters.forEach(([key, value]) => {
+                    const operator = value.match(/{(.*?)}/)[1];
+                    const param = key.replace(/{.*?}/g, '');
+                    const filterOperator = operators[operator];
+
+                    if (!filterOperator) {
+                        throw new Error(`Invalid operator: ${operator}`);
+                    }
+
+                    let filterValue = value;
+                    if (typeof filterValue === 'string') {
+                        filterValue = filterValue.replace(/{.*?}/g, '');
+                    }
+
+                    let parsedValue;
+                    if (filterOperator === 'like') {
+                        parsedValue = `%${filterValue}%`;
+                    } else if (/^\d+$/.test(filterValue)) {
+                        parsedValue = parseInt(filterValue);
+                    } else {
+                        parsedValue = filterValue;
+                    }
+
+                    filterConditions.push(`s.${param} ${filterOperator} $${values.length + 1}`);
+                    values.push(parsedValue);
+                });
+
+                sql += filterConditions.join(' AND ');
+            }
+
+            const result = await pool.query(sql, values);
+
+            const students = {};
+            result.rows.forEach(row => {
+                const studentId = row.student_id;
+                if (!students[studentId]) {
+                    students[studentId] = {
+                        student_id: studentId,
+                        registration: row.registration,
+                        name: row.name,
+                        email: row.email,
+                        course: row.course,
+                        schooling: [],
+                        experiences: [],
+                    };
+                }
+
+                if (row.schooling_id) {
+                    students[studentId].schooling.push({
+                        schooling_id: row.schooling_id,
+                        graduation: row.graduation,
+                        conclusion: row.conclusion,
+                        institution: row.institution,
+                    });
+                }
+
+                if (row.experience_id) {
+                    students[studentId].experiences.push({
+                        experience_id: row.experience_id,
+                        position: row.position,
+                        contractor_id: row.contractor_id,
+                        start_date: row.start_date,
+                        end_date: row.end_date,
+                        ongoing: row.ongoing,
+                        contractor: row.contractor,
+                    });
+                }
+            });
+
+            const formattedStudents = Object.values(students);
+
+            return {
+                students: formattedStudents.length > 0 ? formattedStudents : null
+            };
+        } catch (error) {
+            throw new Error(`Error When Listing Students With Operators: ${error.message}`);
+        }
     }
 }
 

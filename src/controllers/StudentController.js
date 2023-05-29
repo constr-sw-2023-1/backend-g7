@@ -13,15 +13,20 @@ async function createStudent (req, res) {
     }
 }
 
-function deleteStudent(req, res) {
+async function deleteStudent(req, res) {
     try {
-        StudentModel.deleteStudent(req.params.id);
-        res.status(200).send({
-            message: "Student Deleted Successfully",
+        const deleted = await StudentModel.deleteStudent(req.params.id);
+
+        if (!deleted) {
+            return res.status(404).send({ message: 'Student Not Found' });
+        }
+
+        return res.status(200).send({
+            message: 'Student Deleted Successfully',
         });
     } catch (error) {
         console.error(error);
-        res.status(500).send({ error: 'Internal Server Error' });
+        return res.status(500).send({ error: 'Internal Server Error' });
     }
 }
 
@@ -31,7 +36,12 @@ async function updateStudent(req, res) {
 
     try {
         const updatedStudent = await StudentModel.updateStudent(id, newData);
-        res.json(updatedStudent);
+
+        return res.status(200).send({
+            message: 'Student Updated Successfully',
+            result: updatedStudent,
+        });
+
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -51,12 +61,29 @@ async function updateStudentByAttribute(req, res) {
 
 async function listStudents(req, res) {
     try {
-        const students = await StudentModel.listStudents();
+        const filters = req.query;
+        let students;
+
+        if (Object.keys(filters).length > 0) {
+            const paramsWithOperators = Object.entries(filters).filter(([key, value]) => value.includes('{') && value.includes('}'));
+
+            if (paramsWithOperators.length > 0) {
+                students = await StudentModel.listStudentsWithOperators(paramsWithOperators);
+            } else {
+                students = await StudentModel.listStudentByQueryString(filters);
+            }
+
+            if (!students.students) {
+                return res.status(404).send({ message: 'No Students Found With The Specified Filters' });
+            }
+        } else {
+            students = await StudentModel.listStudents();
+        }
 
         res.status(200).send({
-            message: "Students Listed Successfully",
-            students: students
-        });
+            message: 'Students Listed Successfully',
+            Students: students,});
+
     } catch (error) {
         console.error(error);
         res.status(500).send({ error: 'Internal Server Error' });
@@ -66,8 +93,8 @@ async function listStudents(req, res) {
 async function listStudentById(req, res) {
         try {
             const student = await StudentModel.listStudentById(req.params.id);
-    
-            if (!student) {
+
+            if (Object.keys(student).length === 0) {
                 return res.status(404).send({ message: 'Student Not Found' });
             }
     
@@ -81,16 +108,4 @@ async function listStudentById(req, res) {
         }
     }
 
-async function listStudentByQueryString(req, res) {
-    try {
-        const filters = req.query;
-        const result = await StudentModel.listStudentByQueryString(filters);
-
-        res.json(result);
-    } catch (error) {
-        console.error('Error:', error);
-        return res.status(500).send({ error: 'Internal Server Error' });
-    }
-}
-
-module.exports = { createStudent, deleteStudent, updateStudent, updateStudentByAttribute, listStudents, listStudentById, listStudentByQueryString};
+module.exports = { createStudent, deleteStudent, updateStudent, updateStudentByAttribute, listStudents, listStudentById};
