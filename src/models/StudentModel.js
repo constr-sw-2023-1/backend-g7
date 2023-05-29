@@ -43,9 +43,9 @@ class StudentModel {
                             createdStudent.student_id,
                             experience.position,
                             experience.contractor_id,
-                            experience.contractTime.start_date,
-                            experience.contractTime.end_date,
-                            experience.contractTime.ongoing
+                            experience.start_date,
+                            experience.end_date,
+                            experience.ongoing
                         ];
 
                         const experienceResult = await pool.query(createExperienceQuery, experienceValues);
