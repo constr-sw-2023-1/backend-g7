@@ -6,8 +6,8 @@
 
 ### Stack utilizadas
 
-Node.js + Express
-PostgreSQL
+- Node.js + Express
+- PostgreSQL
 
 ### Instalação
 
