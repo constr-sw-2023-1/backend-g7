@@ -47,18 +47,6 @@ async function updateStudent(req, res) {
     }
 }
 
-async function updateStudentByAttribute(req, res) {
-    const { id } = req.params;
-    const newData = req.body;
-
-    try {
-        const updatedStudent = await StudentModel.updateStudentByAttribute(id, newData);
-        res.json(updatedStudent);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
-
 async function listStudents(req, res) {
     try {
         const filters = req.query;
@@ -108,4 +96,4 @@ async function listStudentById(req, res) {
         }
     }
 
-module.exports = { createStudent, deleteStudent, updateStudent, updateStudentByAttribute, listStudents, listStudentById};
+module.exports = { createStudent, deleteStudent, updateStudent, listStudents, listStudentById};

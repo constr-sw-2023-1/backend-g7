@@ -87,105 +87,107 @@ class StudentModel {
 
     static async updateStudent(id, newData) {
         try {
-            const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
-            const checkResult = await pool.query(checkQuery, [id]);
-
-            if (checkResult.rows.length === 0) {
-                throw new Error('User Not Found');
-            }
-
-            const updateStudentQuery = `
-      UPDATE student
-      SET
-        name = $1,
-        email = $2,
-        course = $3
-      WHERE student_id = $4
-      RETURNING *
-    `;
-
-            const updateStudentValues = [
-                newData.name,
-                newData.email,
-                newData.course,
-                id
+            console.log('Dados recebidos:', newData);
+          const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
+          const checkResult = await pool.query(checkQuery, [id]);
+      
+          if (checkResult.rows.length === 0) {
+            throw new Error('User Not Found');
+          }
+      
+          const existingData = checkResult.rows[0];
+      
+          const updateStudentQuery = `
+            UPDATE student
+            SET
+              name = $1,
+              email = $2,
+              course = $3
+            WHERE student_id = $4
+            RETURNING *
+          `;
+      
+          let updateStudentValues = [
+            newData.name || existingData.name,
+            newData.email || existingData.email,
+            newData.course || existingData.course,
+            id
+          ];
+      
+          const studentResult = await pool.query(updateStudentQuery, updateStudentValues);
+      
+          const updateExperienceQuery = `
+            UPDATE professional_experience 
+            SET
+              position = $1,
+              contractor_id = $2,
+              start_Date = $3,
+              end_Date = $4,
+              ongoing = $5
+            WHERE student_id = $6
+            RETURNING *
+          `;
+      
+          const updateFormacaoQuery = `
+            UPDATE schooling 
+            SET
+              graduation = $1,
+              conclusion = $2,
+              institution = $3
+            WHERE student_id = $4
+            RETURNING *
+          `;
+      
+          const curriculum = newData.curriculum || {};
+          const updateExperiencePromises = Array.isArray(curriculum.professional_experience) ? curriculum.professional_experience.map(async (experience) => {
+            const updateExperienceValues = [
+              experience.position,
+              experience.contractor_id,
+              experience.contractTime.start_Date,
+              experience.contractTime.end_Date,
+              experience.contractTime.ongoing,
+              id
             ];
-
-            const studentResult = await pool.query(updateStudentQuery, updateStudentValues);
-
-            const updateExperienceQuery = `
-      UPDATE professional_experience 
-      SET
-        position = $1,
-        contractor_id = $2,
-        start_Date = $3,
-        end_Date = $4,
-        ongoing = $5
-      WHERE student_id = $6
-      RETURNING *
-    `;
-
-            const updateFormacaoQuery = `
-      UPDATE schooling 
-      SET
-        graduation = $1,
-        conclusion = $2,
-        institution = $3
-      WHERE student_id = $4
-      RETURNING *
-    `;
-
-            const curriculum = newData.curriculum;
-
-            const updateExperiencePromises = curriculum.professional_experience.map(async (experience) => {
-                const updateExperienceValues = [
-                    experience.position,
-                    experience.contractor_id,
-                    experience.contractTime.start_Date,
-                    experience.contractTime.end_Date,
-                    experience.contractTime.ongoing,
-                    id
-                ];
-
-                return pool.query(updateExperienceQuery, updateExperienceValues);
-            });
-
-            const updateFormacaoPromises = curriculum.schooling.map(async (schooling) => {
-                const updateFormacaoValues = [
-                    schooling.graduation,
-                    schooling.conclusion,
-                    schooling.institution,
-                    id
-                ];
-
-                return pool.query(updateFormacaoQuery, updateFormacaoValues);
-            });
-
-            const experienceResults = await Promise.all(updateExperiencePromises);
-            const formacaoResults = await Promise.all(updateFormacaoPromises);
-
-            await pool.query('COMMIT');
-
-            if (studentResult.rows.length === 0 || experienceResults.some((result) => result.rows.length === 0) || formacaoResults.some((result) => result.rows.length === 0)) {
-                throw new Error('Failed To Update The Student');
+      
+            return pool.query(updateExperienceQuery, updateExperienceValues);
+          }) : [];
+      
+          const updateFormacaoPromises = Array.isArray(curriculum.schooling) ? curriculum.schooling.map(async (schooling) => {
+            const updateFormacaoValues = [
+              schooling.graduation,
+              schooling.conclusion,
+              schooling.institution,
+              id
+            ];
+      
+            return pool.query(updateFormacaoQuery, updateFormacaoValues);
+          }) : [];
+      
+          const experienceResults = await Promise.all(updateExperiencePromises);
+          const formacaoResults = await Promise.all(updateFormacaoPromises);
+      
+          await pool.query('COMMIT');
+      
+          if (
+            studentResult.rows.length === 0 ||
+            experienceResults.some((result) => result.rows.length === 0) ||
+            formacaoResults.some((result) => result.rows.length === 0)
+          ) {
+            throw new Error('Failed To Update The Student');
+          }
+      
+          return {
+            student: studentResult.rows[0],
+            curriculum: {
+              professional_experience: experienceResults.map((result) => result.rows[0]),
+              schooling: formacaoResults.map((result) => result.rows[0])
             }
-
-            return {
-                student: studentResult.rows[0],
-                curriculum: {
-                    professional_experience: experienceResults.map((result) => result.rows[0]),
-                    schooling: formacaoResults.map((result) => result.rows[0])
-                }
-            };
+          };
         } catch (error) {
-            await pool.query('ROLLBACK');
-            throw new Error(`Failed To Update The Student: ${error.message}`);
+          await pool.query('ROLLBACK');
+          throw new Error(`Failed To Update The Student: ${error.message}`);
         }
-    }
-
-    static async updateStudentByAttribute(id, newData) {
-
-    }
+      }
 
     static async listStudents() {
         try {
