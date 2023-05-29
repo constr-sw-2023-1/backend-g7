@@ -20,7 +20,7 @@ CREATE TABLE schooling (
 CREATE TABLE contractors (
   contractor_id SERIAL PRIMARY KEY,
   taxpayerIdNum VARCHAR(14) NOT NULL,
-  name VARCHAR(100) NULL
+  contractor VARCHAR(100) NULL
 );
 
 
@@ -42,17 +42,17 @@ INSERT INTO student (registration, name, email, course)
 VALUES (33333333, 'Carlos', 'carlos@exemplo.com', 'Gastronomia');
 
 INSERT INTO schooling (student_id, graduation, conclusion, institution)
-VALUES (1, 'Superior Inclompleto', '2022-01-01', 'PUCRS');
+VALUES (1, 'Superior Incompleto', '2022-01-01', 'PUCRS');
 INSERT INTO schooling (student_id, graduation, conclusion, institution)
 VALUES (1, 'Técnico Completo', '2023-01-01', 'SCC Informatica');
 INSERT INTO schooling (student_id, graduation, conclusion, institution)
 VALUES (3, 'Superior Completo', '2021-01-01', 'PUCRS');
 
-INSERT INTO contractors (taxpayerIdNum, name)
+INSERT INTO contractors (taxpayerIdNum, contractor)
 VALUES (11111111111111, 'Matheus&Marrocos');
-INSERT INTO contractors (taxpayerIdNum, name)
+INSERT INTO contractors (taxpayerIdNum, contractor)
 VALUES (22222222222222, 'Jorge&Roberto');
-INSERT INTO contractors (taxpayerIdNum, name)
+INSERT INTO contractors (taxpayerIdNum, contractor)
 VALUES (33333333333333, 'Tamiro&Tamara');
 
 INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing)
