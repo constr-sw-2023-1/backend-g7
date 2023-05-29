@@ -1,7 +1,7 @@
 const StudentModel = require('../models/StudentModel');
 const ApiError = require('../errors/ApiError');
 
-async function createStudent (req, res) {
+async function createStudent (req, res, next) {
     try {
         const student = await StudentModel.createStudent(req.body);
         res.status(201).send({

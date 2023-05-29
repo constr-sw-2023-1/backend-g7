@@ -87,7 +87,6 @@ class StudentModel {
 
     static async updateStudent(id, newData) {
         try {
-            console.log('Dados recebidos:', newData);
           const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
           const checkResult = await pool.query(checkQuery, [id]);
       
