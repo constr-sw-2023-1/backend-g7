@@ -2,7 +2,7 @@
 
 ### Esquema BD
 
----
+![Database schema](DBScheme.jpeg)
 
 ### Stack utilizadas
 
