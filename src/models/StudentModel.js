@@ -176,128 +176,126 @@ class StudentModel {
             throw new Error('Failed To Update The Student');
           }
       
-          return {
-            student: studentResult.rows[0],
-            curriculum: {
-              professional_experience: experienceResults.map((result) => result.rows[0]),
-              schooling: formacaoResults.map((result) => result.rows[0])
-            }
-          };
+          return await this.listStudentById(id);
         } catch (error) {
           await pool.query('ROLLBACK');
           throw new Error(`Failed To Update The Student: ${error.message}`);
         }
       }
 
-    static async listStudents() {
+      static async listStudents() {
         try {
-            const query = `
+          const query = `
             SELECT s.*, se.schooling_id, se.graduation, se.conclusion, se.institution, pe.experience_id, pe.position, pe.contractor_id, pe.start_date, pe.end_date, pe.ongoing
             FROM student s
             LEFT JOIN schooling se ON s.student_id = se.student_id
             LEFT JOIN professional_experience pe ON s.student_id = pe.student_id
-        `;
-            const result = await pool.query(query);
-            const students = {};
-
-            for (const row of result.rows) {
-                const studentId = row.student_id;
-
-                if (!students[studentId]) {
-                    students[studentId] = {
-                        student_id: row.student_id,
-                        registration: row.registration,
-                        name: row.name,
-                        email: row.email,
-                        course: row.course,
-                        schooling: [],
-                        professional_experience: []
-                    };
+          `;
+          const result = await pool.query(query);
+          const students = {};
+      
+          for (const row of result.rows) {
+            const studentId = row.student_id;
+      
+            if (!students[studentId]) {
+              students[studentId] = {
+                student_id: row.student_id,
+                registration: row.registration,
+                name: row.name,
+                email: row.email,
+                course: row.course,
+                curriculum: {
+                  schooling: [],
+                  professional_experience: []
                 }
-
-                if (row.schooling_id) {
-                    students[studentId].schooling.push({
-                        schooling_id: row.schooling_id,
-                        graduation: row.graduation,
-                        conclusion: row.conclusion,
-                        institution: row.institution
-                    });
-                }
-
-                if (row.experience_id) {
-                    students[studentId].professional_experience.push({
-                        experience_id: row.experience_id,
-                        position: row.position,
-                        contractor_id: row.contractor_id,
-                        start_date: row.start_date,
-                        end_date: row.end_date,
-                        ongoing: row.ongoing
-                    });
-                }
+              };
             }
-
-            const studentList = Object.values(students);
-
-            return {
-                students: studentList
-            };
+      
+            if (row.schooling_id) {
+              students[studentId].curriculum.schooling.push({
+                schooling_id: row.schooling_id,
+                graduation: row.graduation,
+                conclusion: row.conclusion,
+                institution: row.institution
+              });
+            }
+      
+            if (row.experience_id) {
+              students[studentId].curriculum.professional_experience.push({
+                experience_id: row.experience_id,
+                position: row.position,
+                contractor_id: row.contractor_id,
+                start_date: row.start_date,
+                end_date: row.end_date,
+                ongoing: row.ongoing
+              });
+            }
+          }
+      
+          const studentList = Object.values(students);
+      
+          return {
+            students: studentList
+          };
         } catch (error) {
-            throw new Error(`Error When Listing Students: ${error.message}`);
+          throw new Error(`Error When Listing Students: ${error.message}`);
         }
-    }
+      }
 
-    static async listStudentById(id) {
+      static async listStudentById(id) {
         try {
-            const query = `
+          const query = `
             SELECT s.*, se.schooling_id, se.graduation, se.conclusion, se.institution, pe.experience_id, pe.position, pe.contractor_id, pe.start_date, pe.end_date, pe.ongoing
             FROM student s
             LEFT JOIN schooling se ON s.student_id = se.student_id
             LEFT JOIN professional_experience pe ON s.student_id = pe.student_id
             WHERE s.student_id = $1
-        `;
-            const values = [id];
-            const result = await pool.query(query, values);
-            const student = {};
-
-            for (const row of result.rows) {
-                const studentId = row.student_id;
-
-                if (!student.student_id) {
-                    student.student_id = row.student_id;
-                    student.registration = row.registration;
-                    student.name = row.name;
-                    student.email = row.email;
-                    student.course = row.course;
-                    student.schooling = [];
-                    student.professional_experience = [];
-                }
-
-                if (row.schooling_id) {
-                    student.schooling.push({
-                        schooling_id: row.schooling_id,
-                        graduation: row.graduation,
-                        conclusion: row.conclusion,
-                        institution: row.institution
-                    });
-                }
-
-                if (row.experience_id) {
-                    student.professional_experience.push({
-                        experience_id: row.experience_id,
-                        position: row.position,
-                        contractor_id: row.contractor_id,
-                        start_date: row.start_date,
-                        end_date: row.end_date,
-                        ongoing: row.ongoing
-                    });
-                }
+          `;
+          const values = [id];
+          const result = await pool.query(query, values);
+          const student = {};
+      
+          for (const row of result.rows) {
+            const studentId = row.student_id;
+      
+            if (!student.student_id) {
+              student.student_id = row.student_id;
+              student.registration = row.registration;
+              student.name = row.name;
+              student.email = row.email;
+              student.course = row.course;
+              student.curriculum = {
+                schooling: [],
+                professional_experience: []
+              };
             }
-
-            return student;
+      
+            if (row.schooling_id) {
+              student.curriculum.schooling.push({
+                schooling_id: row.schooling_id,
+                graduation: row.graduation,
+                conclusion: row.conclusion,
+                institution: row.institution
+              });
+            }
+      
+            if (row.experience_id) {
+              student.curriculum.professional_experience.push({
+                experience_id: row.experience_id,
+                position: row.position,
+                contractor_id: row.contractor_id,
+                start_date: row.start_date,
+                end_date: row.end_date,
+                ongoing: row.ongoing
+              });
+            }
+          }
+      
+          return student;
         } catch (error) {
-            throw new Error(`Error When Retrieving Student By ID: ${error.message}`);
+          throw new Error(`Error When Retrieving Student By ID: ${error.message}`);
         }
-    }
+      }
 
     static async listStudentByQueryString(filters) {
         try {
