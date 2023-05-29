@@ -150,9 +150,9 @@ class StudentModel {
             const updateExperienceValues = [
               experience.position,
               experience.contractor_id,
-              experience.contractTime.start_Date,
-              experience.contractTime.end_Date,
-              experience.contractTime.ongoing,
+              experience.start_Date,
+              experience.end_Date,
+              experience.ongoing,
               id
             ];
       
