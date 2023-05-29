@@ -4,7 +4,7 @@ async function createStudent (req, res) {
     try {
         const student = await StudentModel.createStudent(req.body);
         res.status(201).send({
-            message: "student created successfully",
+            message: "Student Created Successfully",
             data: student
         });
     } catch (error) {
@@ -17,7 +17,7 @@ function deleteStudent(req, res) {
     try {
         StudentModel.deleteStudent(req.params.id);
         res.status(200).send({
-            message: "student deleted successfully",
+            message: "Student Deleted Successfully",
         });
     } catch (error) {
         console.error(error);
@@ -54,7 +54,7 @@ async function listStudents(req, res) {
         const students = await StudentModel.listStudents();
 
         res.status(200).send({
-            message: "Students listed successfully",
+            message: "Students Listed Successfully",
             students: students
         });
     } catch (error) {
@@ -72,7 +72,7 @@ async function listStudentById(req, res) {
             }
     
             return res.status(200).send({
-                message: 'Student listed successfully',
+                message: 'Student Listed Successfully',
                 student: student,
             });
         } catch (error) {

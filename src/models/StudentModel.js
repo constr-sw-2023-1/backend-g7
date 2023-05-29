@@ -51,7 +51,7 @@ class StudentModel {
             }
             return createdStudent;
         } catch (error) {
-            throw new Error(`Erro ao criar aluno: ${error.message}`);
+            throw new Error(`Error When Creating Student: ${error.message}`);
         }
     }
 
@@ -68,7 +68,7 @@ class StudentModel {
 
             return true;
         } catch (error) {
-            throw new Error(`Erro ao excluir aluno: ${error.message}`);
+            throw new Error(`Error When Deleting Student: ${error.message}`);
         }
     }
 
@@ -78,7 +78,7 @@ class StudentModel {
             const checkResult = await pool.query(checkQuery, [id]);
 
             if (checkResult.rows.length === 0) {
-                throw new Error('Aluno não encontrado');
+                throw new Error('User Not Found');
             }
 
             const updateStudentQuery = `
@@ -154,7 +154,7 @@ class StudentModel {
             await pool.query('COMMIT');
 
             if (studentResult.rows.length === 0 || experienceResults.some((result) => result.rows.length === 0) || formacaoResults.some((result) => result.rows.length === 0)) {
-                throw new Error('Falha ao atualizar o aluno');
+                throw new Error('Failed To Update The Student');
             }
 
             return {
@@ -166,7 +166,7 @@ class StudentModel {
             };
         } catch (error) {
             await pool.query('ROLLBACK');
-            throw new Error(`Erro ao atualizar o aluno: ${error.message}`);
+            throw new Error(`Failed To Update The Student: ${error.message}`);
         }
     }
 
@@ -180,7 +180,7 @@ class StudentModel {
             const result = await pool.query(query);
             return result.rows;
         } catch (error) {
-            throw new Error(`Erro ao listar estudantes: ${error.message}`);
+            throw new Error(`Error When Listing Students: ${error.message}`);
         }
     }
 
@@ -191,7 +191,7 @@ class StudentModel {
             const result = await pool.query(query, values);
             return result.rows[0];
         } catch (error) {
-            throw new Error(`Erro ao obter estudante por ID: ${error.message}`);
+            throw new Error(`Error When Retrieving Student By ID: ${error.message}`);
         }
     }
 
@@ -225,7 +225,7 @@ class StudentModel {
             const result = await pool.query(sql, values);
             return result.rows;
         } catch (error) {
-            throw new Error(`Erro ao listar alunos por filtros: ${error.message}`);
+            throw new Error(`Error When Listing Students By Filters: ${error.message}`);
         }
     }
 
