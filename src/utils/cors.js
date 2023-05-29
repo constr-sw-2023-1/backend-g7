@@ -1,10 +1,8 @@
-const cors = require('src/utils/cors');
+const cors = require('cors');
 
 const corsOptions = {
     origin: '*',
-    methods: ['GET', 'PATCH', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Type', 'Authorization'],
+    methods: ['GET', 'PATCH', 'POST', 'PUT', 'DELETE']
 }
 
 module.exports = cors(corsOptions);

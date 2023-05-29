@@ -4,9 +4,8 @@ class StudentModel {
 
     static async createStudent(student) {
         try {
-            const query = 'INSERT INTO aluno (aluno_id, registration, name, email, course) VALUES ($1, $2, $3, $4, $5) RETURNING *';
+            const query = 'INSERT INTO student (registration, name, email, course) VALUES ($1, $2, $3, $4) RETURNING *';
             const values = [
-                student.id,
                 student.registration,
                 student.name,
                 student.email,
@@ -22,9 +21,9 @@ class StudentModel {
 
                 if (schooling && Array.isArray(schooling)) {
                     for (const education of schooling) {
-                        const educationQuery = 'INSERT INTO schooling (aluno_id, graduation, conclusion, institution) VALUES ($1, $2, $3, $4)';
+                        const educationQuery = 'INSERT INTO schooling (student_id, graduation, conclusion, institution) VALUES ($1, $2, $3, $4)';
                         const educationValues = [
-                            createdStudent.aluno_id,
+                            createdStudent.student_id,
                             education.graduation,
                             education.conclusion,
                             education.institution
@@ -36,9 +35,9 @@ class StudentModel {
 
                 if (professional_experience && Array.isArray(professional_experience)) {
                     for (const experience of professional_experience) {
-                        const experienceQuery = 'INSERT INTO professional_experience (aluno_id, position, contractor_id, start_Date, end_Date, ongoing) VALUES ($1, $2, $3, $4, $5, $6)';
+                        const experienceQuery = 'INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing) VALUES ($1, $2, $3, $4, $5, $6)';
                         const experienceValues = [
-                            createdStudent.aluno_id,
+                            createdStudent.student_id,
                             experience.position,
                             experience.contractor_id,
                             experience.contractTime.start_Date,
@@ -52,54 +51,54 @@ class StudentModel {
             }
             return createdStudent;
         } catch (error) {
-            throw new Error(`Erro ao criar aluno: ${error.message}`);
+            throw new Error(`Error When Creating Student: ${error.message}`);
         }
     }
 
     static async deleteStudent(id) {
         try {
-            const deleteExperienceQuery = 'DELETE FROM professional_experience WHERE aluno_id = $1';
+            const deleteExperienceQuery = 'DELETE FROM professional_experience WHERE student_id = $1';
             await pool.query(deleteExperienceQuery, [id]);
 
-            const deleteEducationQuery = 'DELETE FROM schooling WHERE aluno_id = $1';
+            const deleteEducationQuery = 'DELETE FROM schooling WHERE student_id = $1';
             await pool.query(deleteEducationQuery, [id]);
 
-            const deleteStudentQuery = 'DELETE FROM aluno WHERE aluno_id = $1';
+            const deleteStudentQuery = 'DELETE FROM student WHERE student_id = $1';
             await pool.query(deleteStudentQuery, [id]);
 
             return true;
         } catch (error) {
-            throw new Error(`Erro ao excluir aluno: ${error.message}`);
+            throw new Error(`Error When Deleting Student: ${error.message}`);
         }
     }
 
     static async updateStudent(id, newData) {
         try {
-            const checkQuery = 'SELECT * FROM aluno WHERE aluno_id = $1';
+            const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
             const checkResult = await pool.query(checkQuery, [id]);
 
             if (checkResult.rows.length === 0) {
-                throw new Error('Aluno não encontrado');
+                throw new Error('User Not Found');
             }
 
-            const updateAlunoQuery = `
-      UPDATE aluno
+            const updateStudentQuery = `
+      UPDATE student
       SET
         name = $1,
         email = $2,
         course = $3
-      WHERE aluno_id = $4
+      WHERE student_id = $4
       RETURNING *
     `;
 
-            const updateAlunoValues = [
+            const updateStudentValues = [
                 newData.name,
                 newData.email,
                 newData.course,
                 id
             ];
 
-            const alunoResult = await pool.query(updateAlunoQuery, updateAlunoValues);
+            const studentResult = await pool.query(updateStudentQuery, updateStudentValues);
 
             const updateExperienceQuery = `
       UPDATE professional_experience 
@@ -109,7 +108,7 @@ class StudentModel {
         start_Date = $3,
         end_Date = $4,
         ongoing = $5
-      WHERE aluno_id = $6
+      WHERE student_id = $6
       RETURNING *
     `;
 
@@ -119,7 +118,7 @@ class StudentModel {
         graduation = $1,
         conclusion = $2,
         institution = $3
-      WHERE aluno_id = $4
+      WHERE student_id = $4
       RETURNING *
     `;
 
@@ -154,12 +153,12 @@ class StudentModel {
 
             await pool.query('COMMIT');
 
-            if (alunoResult.rows.length === 0 || experienceResults.some((result) => result.rows.length === 0) || formacaoResults.some((result) => result.rows.length === 0)) {
-                throw new Error('Falha ao atualizar o aluno');
+            if (studentResult.rows.length === 0 || experienceResults.some((result) => result.rows.length === 0) || formacaoResults.some((result) => result.rows.length === 0)) {
+                throw new Error('Failed To Update The Student');
             }
 
             return {
-                aluno: alunoResult.rows[0],
+                student: studentResult.rows[0],
                 curriculum: {
                     professional_experience: experienceResults.map((result) => result.rows[0]),
                     schooling: formacaoResults.map((result) => result.rows[0])
@@ -167,7 +166,7 @@ class StudentModel {
             };
         } catch (error) {
             await pool.query('ROLLBACK');
-            throw new Error(`Erro ao atualizar o aluno: ${error.message}`);
+            throw new Error(`Failed To Update The Student: ${error.message}`);
         }
     }
 
@@ -177,28 +176,28 @@ class StudentModel {
 
     static async listStudents() {
         try {
-            const query = 'SELECT * FROM aluno';
+            const query = 'SELECT * FROM student';
             const result = await pool.query(query);
             return result.rows;
         } catch (error) {
-            throw new Error(`Erro ao listar estudantes: ${error.message}`);
+            throw new Error(`Error When Listing Students: ${error.message}`);
         }
     }
 
     static async listStudentById(id) {
         try {
-            const query = 'SELECT * FROM aluno WHERE aluno_id = $1';
+            const query = 'SELECT * FROM student WHERE student_id = $1';
             const values = [id];
             const result = await pool.query(query, values);
             return result.rows[0];
         } catch (error) {
-            throw new Error(`Erro ao obter estudante por ID: ${error.message}`);
+            throw new Error(`Error When Retrieving Student By ID: ${error.message}`);
         }
     }
 
     static async listStudentByQueryString(filters) {
         try {
-            let sql = 'SELECT * FROM aluno';
+            let sql = 'SELECT * FROM student';
             const values = [];
 
             if (Object.keys(filters).length > 0) {
@@ -226,7 +225,7 @@ class StudentModel {
             const result = await pool.query(sql, values);
             return result.rows;
         } catch (error) {
-            throw new Error(`Erro ao listar alunos por filtros: ${error.message}`);
+            throw new Error(`Error When Listing Students By Filters: ${error.message}`);
         }
     }
 

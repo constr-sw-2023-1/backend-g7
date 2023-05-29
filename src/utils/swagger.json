@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "Backend-G7",
-    "description": "Microserviço de Alunos - API de Backend em Node.js com PostgreSQL.",
+    "description": "Students Microservice - Backend API in Node.js with PostgreSQL.",
     "contact": {
       "email": "brunoramos013@gmail.com"
     },
@@ -20,7 +20,7 @@
     },
     {
       "name": "Students Management",
-      "description": "Manage Students in the system"
+      "description": "Manage Students In The System"
     }
   ],
   "paths": {
@@ -30,10 +30,10 @@
           "Students Management"
         ],
         "summary": "Create Student",
-        "description": " Create a new Student in the system.",
+        "description": " Create a New Student In The System.",
         "operationId": "createStudent",
         "requestBody": {
-          "description": "Created Student object",
+          "description": "Created Student Object",
           "content": {
             "application/json": {
               "schema": {
@@ -44,7 +44,7 @@
         },
         "responses": {
           "201": {
-            "description": "Student created",
+            "description": "Student Created",
             "content": {
               "application/json": {
                 "schema": {
@@ -63,11 +63,11 @@
           "Student"
         ],
         "summary": "List Students",
-        "description": "Get a list of Students in the system.",
+        "description": "Get a List Of Students In The System.",
         "operationId": "listStudents",
         "responses": {
           "200": {
-            "description": "successful operation",
+            "description": "Students Listed Successfully",
             "content": {
               "application/json": {
                 "schema": {
@@ -88,13 +88,13 @@
           "Student"
         ],
         "summary": "Get Student By ID",
-        "description": "",
+        "description": "List a Student By ID In The System.",
         "operationId": "getStudentByID",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "The ID that needs to be fetched.",
+            "description": "The ID That Needs To Be Fetched.",
             "required": true,
             "schema": {
               "type": "integer"
@@ -112,9 +112,6 @@
               }
             }
           },
-          "401": {
-            "description": "Invalid Token "
-          },
           "404": {
             "description": "Student Not Found"
           },
@@ -128,12 +125,13 @@
           "Students Management"
         ],
         "summary": "Update Student",
+        "description": "Update an existent Student in the System",
         "operationId": "updateStudent",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "ID of Student that needs to be updated",
+            "description": "ID of Student That Needs To Be Updated",
             "required": true,
             "schema": {
               "type": "integer"
@@ -141,7 +139,7 @@
           }
         ],
         "requestBody": {
-          "description": "Update an existent Student in the System",
+          "description": "Update An Existent Student In The System",
           "content": {
             "application/json": {
               "schema": {
@@ -167,12 +165,13 @@
           "Students Management"
         ],
         "summary": "Delete Student",
+        "description": "Delete An Existent Student In The System.",
         "operationId": "deleteStudent",
         "parameters": [
           {
             "name": "id",
             "in": "path",
-            "description": "Insert the ID of the Student that needs to be deleted",
+            "description": "Insert The ID Of The Student That Needs To Be Deleted",
             "required": true,
             "schema": {
               "type": "integer"
@@ -181,10 +180,10 @@
         ],
         "responses": {
           "204": {
-            "description": "Student deleted"
+            "description": "Student Deleted"
           },
           "404": {
-            "description": "Student not found"
+            "description": "Student Not Found"
           },
           "500": {
             "description": "Internal Server Error"
@@ -196,6 +195,7 @@
           "Students Management"
         ],
         "summary": "Update Student",
+        "description": "Update an existent Student in the System",
         "operationId": "updateStudent",
         "parameters": [
           {
@@ -208,7 +208,7 @@
           }
         ],
         "requestBody": {
-          "description": "Update an existent Student in the System",
+          "description": "Update An Existent Student In The System",
           "content": {
             "application/json": {
               "schema": {
@@ -237,40 +237,84 @@
         "type": "object",
         "properties": {
           "id": {
-            "type": "string"
-          },
-          "createdTimestamp": {
-            "type": "number"
-          },
-          "Studentname": {
             "type": "string",
             "required": true
           },
-          "enabled": {
-            "type": "boolean"
+          "createdTimestamp": {
+            "type": "number",
+            "required": true
           },
-          "totp": {
-            "type": "boolean"
+          "enabled": {
+            "type": "boolean",
+            "required": true
           },
           "emailVerified": {
-            "type": "boolean"
+            "type": "boolean",
+            "required": true
           },
           "firstName": {
-            "type": "string",
-            "default": ""
+            "type": "string"
           },
           "lastName": {
-            "type": "string",
-            "default": ""
+            "type": "string"
           },
           "email": {
-            "type": "string",
-            "default": ""
+            "type": "string"
           },
-          "disableableCredentialTypes": {
+          "graduation": {
+            "type": "string"
+          },
+          "curriculum": {
+            "type": "object",
+            "properties": {
+              "schooling": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "graduation": {
+                      "type": "string"
+                    },
+                    "institution": {
+                      "type": "string"
+                    },
+                    "conclusion": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "professional_experience": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "position": {
+                      "type": "string"
+                    },
+                    "contractor": {
+                      "type": "string"
+                    },
+                    "contractTime": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "contractors": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "taxpayerIdNum": {
+                  "type": "number"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
             }
           },
           "requiredActions": {
@@ -300,12 +344,6 @@
               "manage": {
                 "type": "boolean"
               }
-            }
-          },
-          "realmRoles": {
-            "type": "array",
-            "items": {
-              "type": "string"
             }
           }
         }
