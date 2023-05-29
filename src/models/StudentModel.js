@@ -2,64 +2,72 @@ const pool = require('../utils/database');
 
 class StudentModel {
 
-    static async createStudent(student) {
-        try {
-            const createStudentQuery = 'INSERT INTO student (registration, name, email, course) VALUES ($1, $2, $3, $4) RETURNING *';
-            const studentValues = [
-                student.registration,
-                student.name,
-                student.email,
-                student.course
-            ];
+  static async createStudent(student) {
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
 
-            const studentResult = await pool.query(createStudentQuery, studentValues);
-            const createdStudent = studentResult.rows[0];
-            createdStudent.schooling = [];
-            createdStudent.professional_experience = [];
+        const createStudentQuery = 'INSERT INTO student (registration, name, email, course) VALUES ($1, $2, $3, $4) RETURNING *';
+        const studentValues = [
+            student.registration,
+            student.name,
+            student.email,
+            student.course
+        ];
 
-            if (student.curriculum) {
-                const {schooling, professional_experience} = student.curriculum;
+        const studentResult = await client.query(createStudentQuery, studentValues);
+        const createdStudent = studentResult.rows[0];
+        createdStudent.schooling = [];
+        createdStudent.professional_experience = [];
 
-                if (schooling && Array.isArray(schooling)) {
-                    for (const education of schooling) {
-                        const createSchoolingQuery = 'INSERT INTO schooling (student_id, graduation, conclusion, institution) VALUES ($1, $2, $3, $4) RETURNING *';
-                        const educationValues = [
-                            createdStudent.student_id,
-                            education.graduation,
-                            education.conclusion,
-                            education.institution
-                        ];
+        if (student.curriculum) {
+            const { schooling, professional_experience } = student.curriculum;
 
-                        const educationResult = await pool.query(createSchoolingQuery, educationValues);
-                        const createdEducation = educationResult.rows[0];
-                        createdStudent.schooling.push(createdEducation);
-                    }
-                }
+            if (schooling && Array.isArray(schooling)) {
+                for (const education of schooling) {
+                    const createSchoolingQuery = 'INSERT INTO schooling (student_id, graduation, conclusion, institution) VALUES ($1, $2, $3, $4) RETURNING *';
+                    const educationValues = [
+                        createdStudent.student_id,
+                        education.graduation,
+                        education.conclusion,
+                        education.institution
+                    ];
 
-                if (professional_experience && Array.isArray(professional_experience)) {
-                    for (const experience of professional_experience) {
-                        const createExperienceQuery = 'INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
-                        const experienceValues = [
-                            createdStudent.student_id,
-                            experience.position,
-                            experience.contractor_id,
-                            experience.contractTime.start_date,
-                            experience.contractTime.end_date,
-                            experience.contractTime.ongoing
-                        ];
-
-                        const experienceResult = await pool.query(createExperienceQuery, experienceValues);
-                        const createdExperience = experienceResult.rows[0];
-                        createdStudent.professional_experience.push(createdExperience);
-                    }
+                    const educationResult = await client.query(createSchoolingQuery, educationValues);
+                    const createdEducation = educationResult.rows[0];
+                    createdStudent.schooling.push(createdEducation);
                 }
             }
 
-            return createdStudent;
-        } catch (error) {
-            throw new Error(`Error When Creating Student: ${error.message}`);
+            if (professional_experience && Array.isArray(professional_experience)) {
+                for (const experience of professional_experience) {
+                    const createExperienceQuery = 'INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *';
+                    const experienceValues = [
+                        createdStudent.student_id,
+                        experience.position,
+                        experience.contractor_id,
+                        experience.contractTime.start_date,
+                        experience.contractTime.end_date,
+                        experience.contractTime.ongoing
+                    ];
+
+                    const experienceResult = await client.query(createExperienceQuery, experienceValues);
+                    const createdExperience = experienceResult.rows[0];
+                    createdStudent.professional_experience.push(createdExperience);
+                }
+            }
         }
+
+        await client.query('COMMIT');
+
+        return createdStudent;
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw new Error(`Error When Creating Student: ${error.message}`);
+    } finally {
+        client.release();
     }
+  }
 
     static async deleteStudent(id) {
         try {
