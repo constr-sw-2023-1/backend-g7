@@ -113,7 +113,7 @@ async function listStudentById(req, res, next) {
     const student = await StudentModel.listStudentById(req.params.id);
 
     if (Object.keys(student).length === 0) {
-      return res.status(404).send({ message: 'Student Not Found' });
+        throw ApiError.notFound('Student not found');
     }
 
     return res.status(200).send({
@@ -126,6 +126,9 @@ async function listStudentById(req, res, next) {
     if (res.status(400)) {
       next(ApiError.badRequest('Invalid search. Check your URL'));
       return;
+    } else if (res.status(404)) {
+        next(ApiError.notFound('Student not found'));
+        return;
     } else if (res.status(500)) {
       next(ApiError.internalError('Internal Server Error'));
       return;
