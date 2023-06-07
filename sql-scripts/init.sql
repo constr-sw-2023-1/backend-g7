@@ -36,16 +36,18 @@ CREATE TABLE professional_experience (
 );
 
 INSERT INTO student (registration, name, email, course)
-VALUES (11111111, 'Jose', 'jose@exemplo.com', 'Moda');
+VALUES (11111111, 'Jose', 'jose@exemplo.com', 'Direitos');
 INSERT INTO student (registration, name, email, course)
 VALUES (22222222, 'Maria', 'maria@exemplo.com', 'Engenharia Civil');
 INSERT INTO student (registration, name, email, course)
-VALUES (33333333, 'Carlos', 'carlos@exemplo.com', 'Gastronomia');
+VALUES (33333333, 'Carlos', 'carlos@exemplo.com', 'Engenharia de Software');
 
 INSERT INTO schooling (student_id, graduation, conclusion, institution)
 VALUES (1, 'Superior Incompleto', '2022-01-01', 'PUCRS');
 INSERT INTO schooling (student_id, graduation, conclusion, institution)
-VALUES (1, 'Técnico Completo', '2023-01-01', 'SCC Informatica');
+VALUES (1, 'Técnico Completo', '2021-01-01', 'SENAC');
+INSERT INTO schooling (student_id, graduation, conclusion, institution)
+VALUES (2, 'Técnico Completo', '2023-01-01', 'SCC Informatica');
 INSERT INTO schooling (student_id, graduation, conclusion, institution)
 VALUES (3, 'Superior Completo', '2021-01-01', 'PUCRS');
 
@@ -62,3 +64,5 @@ INSERT INTO professional_experience (student_id, position, contractor_id, start_
 VALUES (3, 'Chefe', 3, '2001-01-01', 1);
 INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing)
 VALUES (2, 'Chefe', 1, '2002-01-01', '2009-01-01', 0);
+INSERT INTO professional_experience (student_id, position, contractor_id, start_Date, end_Date, ongoing)
+VALUES (1, 'Analista', 1, '2001-11-05', '2009-01-01', 0);

@@ -43,7 +43,6 @@ async function deleteStudent(req, res, next) {
     }
   }
 }
-
 async function updateStudent(req, res, next) {
   const { id } = req.params;
   const newData = req.body;

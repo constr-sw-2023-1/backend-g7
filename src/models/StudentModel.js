@@ -1,5 +1,6 @@
 const pool = require('../utils/database');
 
+
 class StudentModel {
     
     static async createStudent(student) {
@@ -60,24 +61,25 @@ class StudentModel {
             throw new Error(`Error When Creating Student: ${error.message}`);
         }
     }
-    
+
     static async deleteStudent(id) {
         try {
             const selectQuery = 'SELECT * FROM student WHERE student_id = $1';
             const selectResult = await pool.query(selectQuery, [id]);
 
             if (selectResult.rowCount === 0) {
-                return false;
+                throw new Error('Student does not exist.');
             }
 
             const updateQuery = 'UPDATE student SET enabled = FALSE WHERE student_id = $1';
             await pool.query(updateQuery, [id]);
 
-            return true;
+            return 'Student deleted successfully.';
         } catch (error) {
-            throw new Error(`Error When Deleting Student: ${error.message}`);
+            throw new Error(`Error when deleting student: ${error.message}`);
         }
     }
+
 
     static async updateStudent(id, newData) {
         try {
