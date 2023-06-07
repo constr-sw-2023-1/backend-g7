@@ -19,7 +19,7 @@ async function createStudent (req, res, next) {
     }
 }
 
-async function deleteStudent(req, res) {
+async function deleteStudent(req, res, next) {
     try {
         const deleted = await StudentModel.deleteStudent(req.params.id);
 
