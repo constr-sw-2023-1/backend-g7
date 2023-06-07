@@ -1,6 +1,7 @@
 const StudentModel = require('../models/StudentModel');
+const ApiError = require('../errors/ApiError');
 
-async function createStudent (req, res) {
+async function createStudent (req, res, next) {
     try {
         const student = await StudentModel.createStudent(req.body);
         res.status(201).send({
@@ -8,8 +9,13 @@ async function createStudent (req, res) {
             data: student
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: 'Internal Server Error' });
+        if(res.status(400)){
+            next(ApiError.badRequest('Invalid input. Check your URL'));
+            return;
+        } else if (res.status(500)){
+            next(ApiError.internalError('Internal Server Error'));
+            return;
+        }
     }
 }
 
@@ -17,16 +23,20 @@ async function deleteStudent(req, res) {
     try {
         const deleted = await StudentModel.deleteStudent(req.params.id);
 
-        if (!deleted) {
-            return res.status(404).send({ message: 'Student Not Found' });
-        }
-
         return res.status(200).send({
             message: 'Student Deleted Successfully',
         });
     } catch (error) {
-        console.error(error);
-        return res.status(500).send({ error: 'Internal Server Error' });
+        if(res.status(400)){
+            next(ApiError.badRequest('Invalid search. Check your URL'));
+            return;
+        } else if(res.status(404)){
+            next(ApiError.notFound('Student not found'));
+            return;
+        } else if (res.status(500)){
+            next(ApiError.internalError('Internal Server Error'));
+            return;
+        }
     }
 }
 
@@ -43,19 +53,16 @@ async function updateStudent(req, res) {
         });
 
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
-
-async function updateStudentByAttribute(req, res) {
-    const { id } = req.params;
-    const newData = req.body;
-
-    try {
-        const updatedStudent = await StudentModel.updateStudentByAttribute(id, newData);
-        res.json(updatedStudent);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+        if(res.status(400)){
+            next(ApiError.badRequest('Invalid search. Check your URL'));
+            return;
+        } else if(res.status(404)){
+            next(ApiError.notFound('Student not found'));
+            return;
+        } else if (res.status(500)){
+            next(ApiError.internalError('Internal Server Error'));
+            return;
+        }
     }
 }
 
@@ -85,8 +92,16 @@ async function listStudents(req, res) {
             students: students,
         });
     } catch (error) {
-        console.error(error);
-        res.status(500).send({ error: 'Internal Server Error' });
+        if(res.status(400)){
+            next(ApiError.badRequest('Invalid search. Check your URL'));
+            return;
+        } else if(res.status(404)){
+            next(ApiError.notFound('Student not found'));
+            return;
+        } else if (res.status(500)){
+            next(ApiError.internalError('Internal Server Error'));
+            return;
+        }
     }
 }
 
@@ -104,9 +119,14 @@ async function listStudentById(req, res) {
                 student: student,
             });
         } catch (error) {
-            console.error('Error:', error);
-            return res.status(500).send({ error: 'Internal Server Error' });
+            if(res.status(400)){
+                next(ApiError.badRequest('Invalid search. Check your URL'));
+                return;
+            } else if (res.status(500)){
+                next(ApiError.internalError('Internal Server Error'));
+                return;
+            }
         }
     }
 
-module.exports = { createStudent, deleteStudent, updateStudent, updateStudentByAttribute, listStudents, listStudentById};
+module.exports = { createStudent, deleteStudent, updateStudent, listStudents, listStudentById};
