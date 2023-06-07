@@ -2,6 +2,7 @@ const pool = require('../utils/database');
 
 class StudentModel {
 
+    
     static async createStudent(student) {
         try {
             const createStudentQuery = 'INSERT INTO student (registration, name, email, course) VALUES ($1, $2, $3, $4) RETURNING *';
@@ -61,6 +62,7 @@ class StudentModel {
         }
     }
 
+    
     static async deleteStudent(id) {
         try {
             const selectQuery = 'SELECT * FROM student WHERE student_id = $1';
@@ -70,14 +72,8 @@ class StudentModel {
                 return false;
             }
 
-            const deleteExperienceQuery = 'DELETE FROM professional_experience WHERE student_id = $1';
-            await pool.query(deleteExperienceQuery, [id]);
-
-            const deleteEducationQuery = 'DELETE FROM schooling WHERE student_id = $1';
-            await pool.query(deleteEducationQuery, [id]);
-
-            const deleteStudentQuery = 'DELETE FROM student WHERE student_id = $1';
-            await pool.query(deleteStudentQuery, [id]);
+            const updateQuery = 'UPDATE student SET enabled = FALSE WHERE student_id = $1';
+            await pool.query(updateQuery, [id]);
 
             return true;
         } catch (error) {
@@ -85,6 +81,7 @@ class StudentModel {
         }
     }
 
+    
     static async updateStudent(id, newData) {
         try {
             const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
@@ -94,13 +91,22 @@ class StudentModel {
                 throw new Error('User Not Found');
             }
 
+            const requiredFields = ['name', 'email', 'course', 'enabled'];
+            const missingFields = requiredFields.filter(field => !newData.hasOwnProperty(field));
+
+            if (missingFields.length > 0) {
+                const missingFieldsMessage = `Missing fields: ${missingFields.join(', ')}`;
+                throw new Error(missingFieldsMessage);
+            }
+
             const updateStudentQuery = `
       UPDATE student
       SET
         name = $1,
         email = $2,
-        course = $3
-      WHERE student_id = $4
+        course = $3,
+        enabled = $4    
+      WHERE student_id = $5
       RETURNING *
     `;
 
@@ -108,6 +114,52 @@ class StudentModel {
                 newData.name,
                 newData.email,
                 newData.course,
+                newData.enabled,
+                id
+            ];
+
+            const studentResult = await pool.query(updateStudentQuery, updateStudentValues);
+
+            if (studentResult.rows.length === 0) {
+                throw new Error('Failed to update the student');
+            }
+
+            return {
+                student: studentResult.rows[0]
+            };
+        } catch (error) {
+            throw new Error(`Failed to update the student: ${error.message}`);
+        }
+    }
+
+    
+    static async updateStudentByAttribute(id, newData) {
+        try {
+            const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
+            const checkResult = await pool.query(checkQuery, [id]);
+
+            if (checkResult.rows.length === 0) {
+                throw new Error('User Not Found');
+            }
+
+            const existingData = checkResult.rows[0];
+
+            const updateStudentQuery = `
+      UPDATE student
+      SET
+        name = $1,
+        email = $2,
+        course = $3,
+        enabled = $4
+      WHERE student_id = $5
+      RETURNING *
+    `;
+
+            const updateStudentValues = [
+                newData.name || existingData.name,
+                newData.email || existingData.email,
+                newData.course || existingData.course,
+                newData.enabled !== undefined ? (newData.enabled ? 'true' : 'false') : existingData.enabled,
                 id
             ];
 
@@ -135,9 +187,8 @@ class StudentModel {
       RETURNING *
     `;
 
-            const curriculum = newData.curriculum;
-
-            const updateExperiencePromises = curriculum.professional_experience.map(async (experience) => {
+            const curriculum = newData.curriculum || {};
+            const updateExperiencePromises = Array.isArray(curriculum.professional_experience) ? curriculum.professional_experience.map(async (experience) => {
                 const updateExperienceValues = [
                     experience.position,
                     experience.contractor_id,
@@ -148,9 +199,9 @@ class StudentModel {
                 ];
 
                 return pool.query(updateExperienceQuery, updateExperienceValues);
-            });
+            }) : [];
 
-            const updateFormacaoPromises = curriculum.schooling.map(async (schooling) => {
+            const updateFormacaoPromises = Array.isArray(curriculum.schooling) ? curriculum.schooling.map(async (schooling) => {
                 const updateFormacaoValues = [
                     schooling.graduation,
                     schooling.conclusion,
@@ -159,34 +210,29 @@ class StudentModel {
                 ];
 
                 return pool.query(updateFormacaoQuery, updateFormacaoValues);
-            });
+            }) : [];
 
             const experienceResults = await Promise.all(updateExperiencePromises);
             const formacaoResults = await Promise.all(updateFormacaoPromises);
 
             await pool.query('COMMIT');
 
-            if (studentResult.rows.length === 0 || experienceResults.some((result) => result.rows.length === 0) || formacaoResults.some((result) => result.rows.length === 0)) {
+            if (
+                studentResult.rows.length === 0 ||
+                experienceResults.some((result) => result.rows.length === 0) ||
+                formacaoResults.some((result) => result.rows.length === 0)
+            ) {
                 throw new Error('Failed To Update The Student');
             }
 
-            return {
-                student: studentResult.rows[0],
-                curriculum: {
-                    professional_experience: experienceResults.map((result) => result.rows[0]),
-                    schooling: formacaoResults.map((result) => result.rows[0])
-                }
-            };
+            return await this.listStudentById(id);
         } catch (error) {
             await pool.query('ROLLBACK');
             throw new Error(`Failed To Update The Student: ${error.message}`);
         }
     }
 
-    static async updateStudentByAttribute(id, newData) {
-
-    }
-
+    
     static async listStudents() {
         try {
             const query = `
@@ -208,6 +254,7 @@ class StudentModel {
                         name: row.name,
                         email: row.email,
                         course: row.course,
+                        enabled: row.enabled,
                         schooling: [],
                         professional_experience: []
                     };
@@ -244,6 +291,7 @@ class StudentModel {
         }
     }
 
+    
     static async listStudentById(id) {
         try {
             const query = `
@@ -266,6 +314,7 @@ class StudentModel {
                     student.name = row.name;
                     student.email = row.email;
                     student.course = row.course;
+                    student.enabled = row.enabled;
                     student.schooling = [];
                     student.professional_experience = [];
                 }
@@ -297,46 +346,85 @@ class StudentModel {
         }
     }
 
+    
     static async listStudentByQueryString(filters) {
         try {
-            let sql = `SELECT s.*, se.*, pe.*, c.*
-                    FROM student AS s
-                    LEFT JOIN schooling AS se ON s.student_id = se.student_id
-                    LEFT JOIN professional_experience AS pe ON s.student_id = pe.student_id
-                    LEFT JOIN contractors AS c ON pe.contractor_id = c.contractor_id
-                    WHERE `;
+            let sql = `
+      SELECT s.student_id, s.registration, s.name, s.email, s.course, s.enabled, array_agg(DISTINCT se.schooling_id) AS schooling_ids, array_agg(DISTINCT se.graduation) AS graduations, array_agg(DISTINCT se.conclusion) AS conclusions, array_agg(DISTINCT se.institution) AS institutions, array_agg(DISTINCT pe.experience_id) AS experience_ids, array_agg(DISTINCT pe.position) AS positions, array_agg(DISTINCT pe.contractor_id) AS contractor_ids, array_agg(DISTINCT pe.start_date) AS start_dates, array_agg(DISTINCT pe.end_date) AS end_dates, array_agg(DISTINCT pe.ongoing) AS ongoing_list, array_agg(DISTINCT c.taxpayeridnum) AS taxpayeridnums, array_agg(DISTINCT c.contractor) AS contractors
+      FROM student AS s
+      LEFT JOIN schooling AS se ON s.student_id = se.student_id
+      LEFT JOIN professional_experience AS pe ON s.student_id = pe.student_id
+      LEFT JOIN contractors AS c ON pe.contractor_id = c.contractor_id
+      WHERE `;
             const values = [];
 
             const filterConditions = [];
-            Object.keys(filters).forEach((key, index) => {
-                const filterValue = filters[key];
+            Object.entries(filters).forEach(([key, value], index) => {
                 let filterOperator = '=';
 
-                if (typeof filterValue === 'string') {
-                    if (/^\d+$/.test(filterValue)) {
+                if (key === 'enabled') {
+                    if (value === 'true') {
+                        filterConditions.push(`s.${key} ${filterOperator} $${index + 1}`);
+                        values.push(true);
+                    } else if (value === 'false') {
+                        filterConditions.push(`s.${key} ${filterOperator} $${index + 1}`);
+                        values.push(false);
+                    }
+                } else if (typeof value === 'string') {
+                    if (/^\d+$/.test(value)) {
                         filterOperator = '=';
-                        values.push(parseInt(filterValue));
+                        filterConditions.push(`s.${key} ${filterOperator} $${index + 1}`);
+                        values.push(parseInt(value));
                     } else {
                         filterOperator = 'ILIKE';
-                        values.push(filterValue.toLowerCase());
+                        filterConditions.push(`s.${key} ${filterOperator} $${index + 1}`);
+                        values.push(value.toLowerCase());
                     }
                 }
-                filterConditions.push(`s.${key} ${filterOperator} $${index + 1}`);
             });
 
             sql += filterConditions.join(' AND ');
+            sql += `
+      GROUP BY s.student_id
+    `;
 
             const result = await pool.query(sql, values);
-            return result.rows;
+            const students = result.rows.map(row => ({
+                student_id: row.student_id,
+                registration: row.registration,
+                name: row.name,
+                email: row.email,
+                course: row.course,
+                enabled: row.enabled,
+                graduation: row.schooling_ids.map((id, index) => ({
+                    schooling_id: id,
+                    graduation: row.graduations[index],
+                    conclusion: row.conclusions[index],
+                    institution: row.institutions[index],
+                })),
+                professional_experience: row.experience_ids.map((id, index) => ({
+                    experience_id: id,
+                    position: row.positions[index],
+                    contractor_id: row.contractor_ids[index],
+                    start_date: row.start_dates[index],
+                    end_date: row.end_dates[index],
+                    ongoing: row.ongoing_list[index],
+                    taxpayeridnum: row.taxpayeridnums[index],
+                    contractor: row.contractors[index],
+                })),
+            }));
+
+            return students;
         } catch (error) {
             throw new Error(`Error When Listing Students By Filters: ${error.message}`);
         }
     }
 
+    
     static async listStudentsWithOperators(filters) {
         try {
             let sql = `
-    SELECT s.student_id, s.registration, s.name, s.email, s.course,
+    SELECT s.student_id, s.registration, s.name, s.email, s.course, s.enabled,
            se.schooling_id, se.graduation, se.conclusion, se.institution,
            pe.experience_id, pe.position, pe.contractor_id, pe.start_date, pe.end_date, pe.ongoing,
            c.contractor
@@ -383,6 +471,8 @@ class StudentModel {
                         parsedValue = filterValue;
                     }
 
+                    console.log(filterConditions);
+
                     filterConditions.push(`s.${param} ${filterOperator} $${values.length + 1}`);
                     values.push(parsedValue);
                 });
@@ -402,6 +492,7 @@ class StudentModel {
                         name: row.name,
                         email: row.email,
                         course: row.course,
+                        enabled: row.enabled,
                         schooling: [],
                         experiences: [],
                     };

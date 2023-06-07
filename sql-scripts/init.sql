@@ -4,7 +4,8 @@ CREATE TABLE student (
   registration INTEGER NOT NULL,
   name VARCHAR(100) NULL,
   email VARCHAR(300) NULL,
-  course VARCHAR(100) NULL
+  course VARCHAR(100) NULL,
+  enabled BOOLEAN DEFAULT TRUE
 );
 
 
