@@ -80,7 +80,7 @@ async function listStudents(req, res) {
                 students = await StudentModel.listStudentByQueryString(filters);
             }
 
-            if (!students.students) {
+            if (!students || students.length === 0) {
                 return res.status(404).send({ message: 'No Students Found With The Specified Filters' });
             }
         } else {
@@ -89,8 +89,8 @@ async function listStudents(req, res) {
 
         res.status(200).send({
             message: 'Students Listed Successfully',
-            Students: students,});
-
+            students: students,
+        });
     } catch (error) {
         if(res.status(400)){
             next(ApiError.badRequest('Invalid search. Check your URL'));
@@ -104,6 +104,7 @@ async function listStudents(req, res) {
         }
     }
 }
+
 
 async function listStudentById(req, res) {
         try {
