@@ -24,13 +24,13 @@
     }
   ],
   "paths": {
-    "/Students": {
+    "/students": {
       "post": {
         "tags": [
           "Students Management"
         ],
         "summary": "Create Student",
-        "description": " Create a New Student In The System.",
+        "description": "Create a new student in the system.\n\nTo create a student, provide the required fields in the request body:\n\n- `name`: The name of the student.\n- `email`: The email address of the student.\n- `course`: The course in which the student is enrolled.\n\nExample request body:\n\n```\n{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"course\": \"Computer Science\"\n}\n```\n\nA successful request will return a `201 Created` status code along with the created student object in the response body.\n\nIf any error occurs during the creation process, a `500 Internal Server Error` status code will be returned.\n",
         "operationId": "createStudent",
         "requestBody": {
           "description": "Student Object",
@@ -63,8 +63,60 @@
           "Student"
         ],
         "summary": "List Students",
-        "description": "Get a List Of Students In The System.",
+        "description": "Get a list of students in the system. You can filter the results by providing one or more of the following parameters:\n\n- `name`: Filter students by name.\n- `student_id`: Filter students by ID.\n- `email`: Filter students by email.\n- `course`: Filter students by course.\n- `enabled`: Filter students by enabled status.\n\nFor filtering with operators, use the following format: `field={operator}value`. Supported operators are:\n\n- `{eq}`: Equals\n- `{neq}`: Not equals\n- `{gt}`: Greater than\n- `{lt}`: Less than\n- `{gte}`: Greater than or equal to\n- `{lte}`: Less than or equal to\n- `{like}`: Like (partial match)\n\nExamples:\n\n- To filter by name: `/students?name=John`\n- To filter by ID greater than 2: `/students?student_id={gt}2`\n- To filter by enabled status equals false: `/students?enabled={eq}false`\n- To filter by name like 'Carlos': `/students?name={like}Carlos`",
         "operationId": "listStudents",
+        "parameters": [
+          {
+            "name": "student_id",
+            "in": "query",
+            "description": "Filter students by ID.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "name": "name",
+            "in": "query",
+            "description": "Filter students by name.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "name": "email",
+            "in": "query",
+            "description": "Filter students by email.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "name": "course",
+            "in": "query",
+            "description": "Filter students by course.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          },
+          {
+            "name": "enabled",
+            "in": "query",
+            "description": "Filter students by enabled status.",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "style": "form"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Students Listed Successfully",
@@ -82,13 +134,13 @@
         }
       }
     },
-    "/Students/{id}": {
+    "/students/{id}": {
       "get": {
         "tags": [
           "Student"
         ],
         "summary": "Get Student By ID",
-        "description": "List a Student By ID In The System.",
+        "description": "Get a student by their ID.\n\nTo retrieve a student, provide the student ID as a path parameter in the following format: `/students/{id}`.\n\nExample: `/students/12345`\n\nA successful request will return a `200 OK` status code along with the student object in the response body.\n\nIf the student with the specified ID is not found, a `404 Not Found` status code will be returned.\n\nIf any error occurs during the retrieval process, a `500 Internal Server Error` status code will be returned.\n",
         "operationId": "getStudentByID",
         "parameters": [
           {
@@ -125,7 +177,7 @@
           "Students Management"
         ],
         "summary": "Update Student",
-        "description": "Update an existent Student in the System",
+        "description": "Update an existing student by providing a complete JSON object with updated information.\n\nTo update a student, use the `/students/{id}` route and provide the student ID as a path parameter. In the request body, include a JSON object with all the updated fields.\n\nExample: `/students/12345`\n\nA successful request will return a `200 OK` status code along with the updated student object in the response body.\n\nIf the student with the specified ID is not found, a `404 Not Found` status code will be returned.\n\nIf any error occurs during the update process, a `500 Internal Server Error` status code will be returned.\n",
         "operationId": "updateStudent",
         "parameters": [
           {
@@ -165,7 +217,7 @@
           "Students Management"
         ],
         "summary": "Delete Student",
-        "description": "Delete An Existent Student In The System.",
+        "description": "Perform a logical deletion of a student by setting the `enabled` field to `false`.\n\nTo delete a student, use the `/students/{id}` route and provide the student ID as a path parameter. This operation will update the `enabled` field of the student to `false`, indicating that the student is no longer active.\n\nExample: `/students/12345`\n\nA successful request will return a `204 Student Deleted` status code along with a success message in the response body.\n\nIf the student with the specified ID is not found, a `404 Not Found` status code will be returned.\n\nIf any error occurs during the deletion process, a `500 Internal Server Error` status code will be returned.\n",
         "operationId": "deleteStudent",
         "parameters": [
           {
@@ -194,9 +246,9 @@
         "tags": [
           "Students Management"
         ],
-        "summary": "Update Student",
-        "description": "Update an existent Student in the System",
-        "operationId": "updateStudent",
+        "summary": "Update Student Attibute",
+        "description": "Update one or more fields of a student by providing a partial JSON payload.\n\nTo update a student, use the `/students/{id}` route and provide the student ID as a path parameter. The request body should contain a JSON object with the fields to be updated.\n\nExample: `/students/12345`\n\nThe request body can include any combination of the following fields:\n\n- `name`: Updated name of the student\n- `email`: Updated email of the student\n- `course`: Updated course of the student\n\nA successful request will return a `200 OK` status code along with the updated student object in the response body.\n\nIf the student with the specified ID is not found, a `404 Not Found` status code will be returned.\n\nIf any error occurs during the update process, a `500 Internal Server Error` status code will be returned.\n",
+        "operationId": "updateStudentByAttribute",
         "parameters": [
           {
             "name": "id",
@@ -236,115 +288,84 @@
       "Student": {
         "type": "object",
         "properties": {
-          "id": {
+          "student_id": {
+            "type": "number",
+            "required": true
+          },
+          "registration": {
+            "type": "number",
+            "required": true
+          },
+          "name": {
             "type": "string",
             "required": true
           },
-          "createdTimestamp": {
-            "type": "number",
+          "email": {
+            "type": "string",
+            "required": true
+          },
+          "course": {
+            "type": "string",
             "required": true
           },
           "enabled": {
             "type": "boolean",
             "required": true
           },
-          "emailVerified": {
-            "type": "boolean",
-            "required": true
+          "schooling": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Schooling"
+            }
           },
-          "firstName": {
-            "type": "string"
-          },
-          "lastName": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
+          "professional_experience": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfessionalExperience"
+            }
+          }
+        }
+      },
+      "Schooling": {
+        "type": "object",
+        "properties": {
+          "schooling_id": {
+            "type": "number"
           },
           "graduation": {
             "type": "string"
           },
-          "curriculum": {
-            "type": "object",
-            "properties": {
-              "schooling": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "graduation": {
-                      "type": "string"
-                    },
-                    "institution": {
-                      "type": "string"
-                    },
-                    "conclusion": {
-                      "type": "number"
-                    }
-                  }
-                }
-              },
-              "professional_experience": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "position": {
-                      "type": "string"
-                    },
-                    "contractor": {
-                      "type": "string"
-                    },
-                    "contractTime": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            }
+          "conclusion": {
+            "type": "string",
+            "format": "date-time"
           },
-          "contractors": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "taxpayerIdNum": {
-                  "type": "number"
-                },
-                "name": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "requiredActions": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "notBefore": {
+          "institution": {
+            "type": "string"
+          }
+        }
+      },
+      "ProfessionalExperience": {
+        "type": "object",
+        "properties": {
+          "experience_id": {
             "type": "number"
           },
-          "access": {
-            "type": "object",
-            "properties": {
-              "manageGroupMembership": {
-                "type": "boolean"
-              },
-              "view": {
-                "type": "boolean"
-              },
-              "mapRoles": {
-                "type": "boolean"
-              },
-              "impersonate": {
-                "type": "boolean"
-              },
-              "manage": {
-                "type": "boolean"
-              }
-            }
+          "position": {
+            "type": "string"
+          },
+          "contractor_id": {
+            "type": "number"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ongoing": {
+            "type": "number"
           }
         }
       }

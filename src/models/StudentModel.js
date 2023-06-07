@@ -1,7 +1,6 @@
 const pool = require('../utils/database');
 
 class StudentModel {
-
     
     static async createStudent(student) {
         try {
@@ -61,7 +60,6 @@ class StudentModel {
             throw new Error(`Error When Creating Student: ${error.message}`);
         }
     }
-
     
     static async deleteStudent(id) {
         try {
@@ -81,7 +79,6 @@ class StudentModel {
         }
     }
 
-    
     static async updateStudent(id, newData) {
         try {
             const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
@@ -132,7 +129,6 @@ class StudentModel {
         }
     }
 
-    
     static async updateStudentByAttribute(id, newData) {
         try {
             const checkQuery = 'SELECT * FROM student WHERE student_id = $1';
@@ -232,7 +228,6 @@ class StudentModel {
         }
     }
 
-    
     static async listStudents() {
         try {
             const query = `
@@ -290,7 +285,6 @@ class StudentModel {
             throw new Error(`Error When Listing Students: ${error.message}`);
         }
     }
-
     
     static async listStudentById(id) {
         try {
@@ -345,7 +339,6 @@ class StudentModel {
             throw new Error(`Error When Retrieving Student By ID: ${error.message}`);
         }
     }
-
     
     static async listStudentByQueryString(filters) {
         try {
@@ -420,7 +413,6 @@ class StudentModel {
         }
     }
 
-    
     static async listStudentsWithOperators(filters) {
         try {
             let sql = `
@@ -438,9 +430,9 @@ class StudentModel {
                 eq: '=',
                 neq: '<>',
                 gt: '>',
-                gteq: '>=',
+                gte: '>=',
                 lt: '<',
-                lteq: '<=',
+                lte: '<=',
                 like: 'ILIKE',
             };
 
@@ -470,8 +462,6 @@ class StudentModel {
                     } else {
                         parsedValue = filterValue;
                     }
-
-                    console.log(filterConditions);
 
                     filterConditions.push(`s.${param} ${filterOperator} $${values.length + 1}`);
                     values.push(parsedValue);
