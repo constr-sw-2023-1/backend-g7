@@ -1,5 +1,6 @@
 const pool = require('../utils/database');
 
+
 class StudentModel {
     
     static async createStudent(student) {
